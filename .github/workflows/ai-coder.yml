@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@@v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
@@ -30,8 +30,16 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
-        # ဤနေရာတွင် လမ်းကြောင်းကို အတိအကျ ပြန်စစ်ထားပါသည်
-        run: python .github/scripts/ai_processor.py
+        run: |
+          echo "Checking file location..."
+          # ဖိုင်ဘယ်မှာရှိလဲဆိုတာ ရှာခိုင်းလိုက်တာပါ
+          FILE_PATH=$(find . -name "ai_processor.py" | head -n 1)
+          if [ -z "$FILE_PATH" ]; then
+            echo "Error: ai_processor.py not found anywhere!"
+            exit 1
+          fi
+          echo "Found file at: $FILE_PATH"
+          python3 "$FILE_PATH"
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
