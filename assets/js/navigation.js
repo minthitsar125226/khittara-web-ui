@@ -32,21 +32,19 @@ const translations = {
 };
 
 function applyLanguage(lang) {
-    const t = translations[lang];
+    const t = translations[lang] || translations.en;
     const labels = document.querySelectorAll('.sidebar-label');
-    if (labels.length >= 4) {
-        labels[0].innerText = t.dashboard;
-        labels[1].innerText = t.ai_chat;
-        labels[2].innerText = t.lottery;
-        labels[3].innerText = t.settings;
-    }
+    labels[0].innerText = t.dashboard;
+    labels[1].innerText = t.ai_chat;
+    labels[2].innerText = t.lottery;
+    labels[3].innerText = t.settings;
+
     document.querySelector('#homeView p').innerText = t.empower;
     document.getElementById('initialInput').placeholder = t.ask_placeholder;
     document.getElementById('chatInput').placeholder = t.ask_placeholder;
-    document.getElementById('newChatBtn').innerHTML = `<i class="fas fa-plus mr-2"></i> ${t.new_chat}`;
     document.getElementById('historyTitle').innerText = t.history;
     
-    // Modal Text
+    // Modal
     document.getElementById('modalTitle').innerText = t.settings;
     document.getElementById('darkModeLabel').innerText = t.dark_mode;
     document.getElementById('langLabel').innerText = t.lang;
@@ -59,7 +57,7 @@ function switchView(viewName) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('view-active'));
     document.getElementById(viewName + 'View').classList.add('view-active');
     document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active-tab'));
-    event.currentTarget.classList.add('active-tab');
+    if(event) event.currentTarget.classList.add('active-tab');
 }
 
 function toggleTheme() {
