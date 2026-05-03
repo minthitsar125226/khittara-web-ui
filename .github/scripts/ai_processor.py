@@ -14,39 +14,42 @@ def call_gemini(prompt):
     return response.json()['candidates'][0]['content']['parts'][0]['text']
 
 def main():
-    # ၁။ Repository ထဲမှာရှိသမျှ ဖိုင်စာရင်းကို ယူပါ (assets, js, css အကုန်ပါအောင်)
+    # ၁။ Repository ထဲက ဖိုင်အားလုံးကို စာရင်းလုပ်ပါ
     all_files = []
     for root, dirs, files in os.walk("."):
         for file in files:
-            if not file.startswith('.') and not root.startswith('./.'):
+            # မလိုအပ်တဲ့ folder တွေကို ဖယ်ထုတ်ပါ
+            if not any(x in root for x in ['./.', './github', './node_modules']):
                 all_files.append(os.path.join(root, file))
 
-    # ၂။ AI ကို ဘယ်ဖိုင်ပြင်ရမလဲ အရင်မေးပါ
+    # ၂။ ဘယ်ဖိုင်ကို ပြင်ရမလဲ AI ကို အရင်မေးပါ
     file_selection_prompt = f"""
-    List of files in repository: {all_files}
+    List of files in repo: {all_files}
     User request: "{issue_body}"
-    Which file from the list should be modified? Return ONLY the file path.
+    Which file path should be modified? Return ONLY the exact file path from the list.
     """
     file_to_edit = call_gemini(file_selection_prompt).strip().replace('`', '')
+    
+    # ဖြတ်ထုတ်ထားတဲ့ path ထဲမှာ ရှေ့ဆုံးက ./ ပါရင် ဖယ်ပါ
+    file_to_edit = file_to_edit.lstrip("./")
 
     if not os.path.exists(file_to_edit):
-        print(f"Error: AI suggested {file_to_edit} but it doesn't exist.")
+        print(f"Error: File not found: {file_to_edit}")
         return
 
-    # ၃။ ရွေးချယ်လိုက်တဲ့ဖိုင်ကို ဖတ်ပြီး ပြင်ခိုင်းပါ
+    # ၃။ ရွေးချယ်လိုက်တဲ့ဖိုင်ကို ဖတ်ပြီး AI ကို ပြင်ခိုင်းပါ
     with open(file_to_edit, "r") as f:
         original_code = f.read()
 
     edit_prompt = f"""
     File: {file_to_edit}
-    Current Content:
+    Code:
     {original_code}
 
-    User Request:
-    {issue_body}
-
-    Instruction: Provide the FULL updated content for {file_to_edit}. 
-    Return ONLY the code. No explanations. No markdown blocks.
+    User Request: {issue_body}
+    
+    Instruction: Update the code based on the request. 
+    Return ONLY the full updated code. Do not use markdown blocks.
     """
     
     updated_code = call_gemini(edit_prompt)
