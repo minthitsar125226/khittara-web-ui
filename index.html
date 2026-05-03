@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khittara AI - Futuristic Hub</title>
+    <title>Khittara AI - Personal Hub</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -13,59 +13,74 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="ai-config.js"></script>
-    
-    <script>
-        tailwind.config = { theme: { extend: { colors: { 'gold': { 500: '#eab308' } } } } }
-    </script>
 </head>
 <body>
 
-    <nav class="floating-sidebar flex flex-col space-y-4">
-        <div class="sidebar-icon active-tab" onclick="switchView('home')">
+    <nav class="floating-sidebar">
+        <div class="sidebar-icon active-tab" onclick="switchView('home')" title="Home">
             <i class="fas fa-home"></i><span class="sidebar-label">Home Dashboard</span>
         </div>
-        <div class="sidebar-icon" onclick="newChat()">
-            <i class="fas fa-plus"></i><span class="sidebar-label">Start New Chat</span>
+        <div class="sidebar-icon" onclick="newChat()" title="New Chat">
+            <i class="fas fa-plus-circle"></i><span class="sidebar-label">Start New Chat</span>
         </div>
+        
+        <div class="border-t border-gray-100 my-4 opacity-50"></div>
+        <div id="historyList" class="flex-1 overflow-y-auto chat-scroll space-y-1"></div>
+        
         <div class="mt-auto">
-            <div class="sidebar-icon" onclick="toggleSettings()">
+            <div class="sidebar-icon" onclick="toggleSettings()" title="Settings">
                 <i class="fas fa-cog"></i><span class="sidebar-label">Settings</span>
             </div>
         </div>
     </nav>
 
-    <section id="homeView" class="view-container view-active flex-col items-center justify-center p-6">
-        <h1 class="text-6xl font-bold mb-12">Khittara <span class="text-gold-500">.</span></h1>
+    <section id="homeView" class="view-container view-active flex-col items-center justify-center">
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-bold">Khittara <span class="text-gold-500">.</span></h1>
+            <p class="text-gray-400 mt-2">Empowering your vision with AI.</p>
+        </div>
         <div class="w-full max-w-2xl px-4">
-            <div class="flex items-center bg-white border border-gray-100 oval-input p-2 shadow-sm">
-                <input type="text" id="initialInput" placeholder="How can I help you today?" class="flex-1 bg-transparent px-8 py-5 outline-none">
-                <button onclick="startChat()" class="bg-gold-500 text-white w-14 h-14 rounded-full"><i class="fas fa-arrow-up"></i></button>
+            <div class="flex items-center bg-white border border-gray-100 oval-input p-2 shadow-sm focus-within:shadow-xl transition-all">
+                <input type="text" id="initialInput" placeholder="Ask Khittara anything..." class="flex-1 bg-transparent px-8 py-5 outline-none text-lg">
+                <button onclick="startChat()" class="bg-gold-500 text-white w-14 h-14 rounded-full shadow-lg"><i class="fas fa-arrow-up"></i></button>
             </div>
         </div>
     </section>
 
     <section id="chatView" class="view-container flex-col bg-white">
-        <div id="chatMessages" class="flex-1 overflow-y-auto p-12 max-w-4xl mx-auto w-full pb-32"></div>
-        <footer class="p-8 bg-white ml-24">
-            <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border">
-                <input type="text" id="chatInput" placeholder="Type a message..." class="flex-1 bg-transparent px-8 py-3 outline-none">
+        <header class="h-16 border-b border-gray-50 flex items-center px-12 justify-between">
+            <span class="text-[10px] font-bold text-gray-300 tracking-widest">STABLE ENGINE ACTIVE</span>
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+        </header>
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-12 max-w-4xl mx-auto w-full pb-32 chat-scroll"></div>
+        <footer class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-white">
+            <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border focus-within:bg-white transition-all">
+                <input type="text" id="chatInput" placeholder="Send a message..." class="flex-1 bg-transparent px-8 py-3 outline-none">
                 <button onclick="sendMessage()" class="bg-gold-500 text-white w-10 h-10 rounded-full"><i class="fas fa-paper-plane"></i></button>
             </div>
         </footer>
     </section>
 
-    <div id="settingsModal" class="fixed inset-0 bg-black/20 backdrop-blur-md hidden items-center justify-center z-[2000]">
+    <div id="settingsModal" class="fixed inset-0 bg-black/30 backdrop-blur-md hidden items-center justify-center z-[10001]">
+        <div class="bg-white w-full max-w-md p-10 rounded-[40px] shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6">Settings</h2>
+            <div class="space-y-4">
+                <input type="password" id="apiKeyInput" placeholder="Gemini API Key" class="w-full bg-gray-50 rounded-2xl p-4 outline-none border focus:border-gold-500">
+                <input type="text" id="modelInput" placeholder="Model Name" class="w-full bg-gray-50 rounded-2xl p-4 outline-none border focus:border-gold-500">
+                <button onclick="saveSettings()" class="w-full bg-gold-500 text-white py-4 rounded-2xl font-bold shadow-lg">Save</button>
+                <button onclick="toggleSettings()" class="w-full text-gray-400 text-xs">Close</button>
+            </div>
         </div>
+    </div>
 
     <script src="assets/js/navigation.js"></script>
     <script src="assets/js/chat.js"></script>
     <script>
-        // Init logic
         window.onload = () => {
+            loadHistoryList();
             document.getElementById('apiKeyInput').value = localStorage.getItem('khittara_api_key') || '';
             document.getElementById('modelInput').value = localStorage.getItem('khittara_model') || 'gemini-1.5-flash';
         };
-        // Enter Key Handling
         document.getElementById('initialInput').addEventListener('keydown', (e) => e.key === 'Enter' && startChat());
         document.getElementById('chatInput').addEventListener('keydown', (e) => e.key === 'Enter' && sendMessage());
     </script>
