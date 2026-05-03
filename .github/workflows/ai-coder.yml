@@ -5,10 +5,8 @@ on:
 
 jobs:
   auto_fix:
-    # Issue title မှာ 'AI-FIX' လို့ ပါမှသာ ဒီ Action အလုပ်လုပ်မှာဖြစ်ပါတယ်
     if: contains(github.event.issue.title, 'AI-FIX')
     runs-on: ubuntu-latest
-    
     permissions:
       contents: write
       issues: write
@@ -17,7 +15,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          # သင် Secret ထဲမှာ သိမ်းထားတဲ့ နာမည် (PAT_TOKEN) ကို သုံးထားပါတယ်
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
 
@@ -27,20 +24,17 @@ jobs:
           python-version: '3.9'
 
       - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests
+        run: pip install requests
 
       - name: Run AI Agent
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
-        # .github/scripts/ai_processor.py ကို လှမ်း run ပါမယ်
+        # ဤနေရာတွင် လမ်းကြောင်းကို အတိအကျ ပြန်စစ်ထားပါသည်
         run: python .github/scripts/ai_processor.py
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "AI: Automated update from Issue #${{ github.event.issue.number }}"
-          # သင့် Repository ရဲ့ Branch နာမည် main ဟုတ်မဟုတ် စစ်ဆေးပါ
-          branch: main 
+          commit_message: "AI: Automated update based on Issue #${{ github.event.issue.number }}"
+          branch: main
