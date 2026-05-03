@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khittara AI - Personal Assistant</title>
+    <title>Khittara AI - Futuristic Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -15,113 +15,144 @@
     <script>
         tailwind.config = {
             theme: {
-                extend: { colors: { 'gold': { 500: '#eab308', 600: '#ca8a04' } } }
+                extend: { colors: { 'gold': { 400: '#fbbf24', 500: '#eab308', 600: '#ca8a04' } } }
             }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; height: 100vh; margin: 0; background-color: #fff; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #fcfcfc; height: 100vh; margin: 0; overflow: hidden; }
         
-        /* View Management */
-        .view-container { height: 100vh; width: 100vw; display: none; }
+        .view-container { display: none; height: 100vh; width: 100vw; position: relative; }
         .view-active { display: flex !important; }
-        
-        .oval-input { border-radius: 9999px; }
-        .chat-scroll::-webkit-scrollbar { width: 4px; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
-        
-        .sidebar-item { transition: all 0.2s; cursor: pointer; border-radius: 12px; margin-bottom: 4px; padding: 12px; }
-        .sidebar-item:hover { background-color: #fef9c3; color: #ca8a04; }
 
-        /* Thinking Animation */
-        .thinking-glow { animation: pulse-glow 1.5s infinite ease-in-out; }
+        /* Floating Glass Sidebar */
+        .floating-sidebar {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 70px;
+            height: auto;
+            max-height: 80vh;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            border-radius: 40px;
+            display: flex;
+            flex-col: column;
+            padding: 20px 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+        .floating-sidebar:hover { width: 240px; padding: 20px; border-radius: 30px; border-color: rgba(234, 179, 8, 0.5); }
+        
+        .sidebar-icon {
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 20px; color: #666;
+            transition: all 0.3s; position: relative;
+            cursor: pointer; overflow: hidden;
+        }
+        .floating-sidebar:hover .sidebar-icon { width: 100%; justify-content: start; padding-left: 15px; }
+        
+        .sidebar-icon i { font-size: 1.2rem; min-width: 25px; }
+        .sidebar-label { opacity: 0; white-space: nowrap; margin-left: 15px; font-size: 0.85rem; font-weight: 500; transition: 0.3s; position: absolute; left: 50px; }
+        .floating-sidebar:hover .sidebar-label { opacity: 1; }
+        
+        .sidebar-icon:hover { background: #eab308; color: white; transform: scale(1.05); box-shadow: 0 5px 15px rgba(234, 179, 8, 0.3); }
+
+        .active-tab { background: rgba(234, 179, 8, 0.1); color: #ca8a04; border: 1px solid rgba(234, 179, 8, 0.2); }
+
+        /* Input Styling */
+        .oval-input { border-radius: 9999px; }
+        .chat-scroll::-webkit-scrollbar { width: 3px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
+
         @keyframes pulse-glow {
             0%, 100% { color: #10b981; filter: drop-shadow(0 0 2px #10b981); }
             50% { color: #eab308; filter: drop-shadow(0 0 8px #eab308); }
         }
-        .prose pre { background: #1e1e1e; padding: 1rem; border-radius: 1rem; overflow-x: auto; margin: 10px 0; border: 1px solid #333; }
+        .thinking-glow { animation: pulse-glow 1.5s infinite; }
     </style>
 </head>
-<body class="overflow-hidden">
+<body>
 
-    <section id="homeView" class="view-container view-active flex-col items-center justify-center p-6 space-y-12">
-        <button onclick="toggleSettings()" class="absolute top-8 right-8 text-gray-300 hover:text-gold-500 transition-colors">
-            <i class="fas fa-cog text-2xl"></i>
-        </button>
-        
-        <div class="text-center space-y-2">
-            <h1 class="text-5xl font-bold">Khittara <span class="text-gold-500 text-6xl">.</span></h1>
-            <p class="text-gray-400 font-light text-lg">The next generation AI platform.</p>
+    <nav class="floating-sidebar flex flex-col space-y-4">
+        <div class="sidebar-icon active-tab" title="Home" onclick="switchView('home')">
+            <i class="fas fa-home"></i>
+            <span class="sidebar-label">Home Dashboard</span>
+        </div>
+        <div class="sidebar-icon" title="New Chat" onclick="newChat()">
+            <i class="fas fa-plus"></i>
+            <span class="sidebar-label">Start New Chat</span>
+        </div>
+        <div class="sidebar-icon" title="Lottery Analytics" onclick="alert('Analysis Feature Coming Soon!')">
+            <i class="fas fa-chart-pie"></i>
+            <span class="sidebar-label">Lottery Analysis</span>
+        </div>
+        <div class="sidebar-icon" title="Voice Lab" onclick="alert('Voice Lab Coming Soon!')">
+            <i class="fas fa-microphone-alt"></i>
+            <span class="sidebar-label">Voice & TTS</span>
+        </div>
+        <div class="sidebar-icon" title="History" onclick="alert('Recent History Injected in Chat View')">
+            <i class="fas fa-history"></i>
+            <span class="sidebar-label">Recent History</span>
+        </div>
+        <div class="mt-auto">
+            <div class="sidebar-icon" title="Settings" onclick="toggleSettings()">
+                <i class="fas fa-cog"></i>
+                <span class="sidebar-label">Settings</span>
+            </div>
+        </div>
+    </nav>
+
+    <section id="homeView" class="view-container view-active flex-col items-center justify-center p-6 space-y-12 bg-white">
+        <div class="text-center space-y-3">
+            <h1 class="text-6xl font-bold tracking-tight text-gray-900">Khittara <span class="text-gold-500">.</span></h1>
+            <p class="text-gray-400 font-light text-xl">The next generation AI platform.</p>
         </div>
 
-        <div class="w-full max-w-2xl">
-            <div class="relative flex items-center bg-white border border-gray-200 oval-input p-2 shadow-sm focus-within:shadow-xl focus-within:border-gold-500 transition-all">
-                <input type="text" id="initialInput" placeholder="Ask anything to Khittara..." 
-                       class="flex-1 bg-transparent border-none focus:ring-0 px-6 py-4 text-lg outline-none text-gray-800">
-                <button onclick="startChat()" class="bg-gold-500 hover:bg-gold-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-95">
+        <div class="w-full max-w-2xl px-4">
+            <div class="relative flex items-center bg-white border border-gray-100 oval-input p-2 shadow-[0_10px_50px_rgba(0,0,0,0.04)] focus-within:shadow-xl focus-within:border-gold-400 transition-all">
+                <input type="text" id="initialInput" placeholder="How can I help you today?" 
+                       class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-5 text-lg outline-none text-gray-700">
+                <button onclick="startChat()" class="bg-gold-500 hover:bg-gold-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-90">
                     <i class="fas fa-arrow-up text-xl"></i>
                 </button>
             </div>
         </div>
     </section>
 
-    <section id="chatView" class="view-container flex-row h-full">
-        <aside class="w-72 bg-gray-50 border-r border-gray-100 flex flex-col p-6 h-full flex-shrink-0">
-            <h2 class="text-xl font-bold mb-6">Khittara <span class="text-gold-500">.</span></h2>
-            <button onclick="newChat()" class="w-full flex items-center justify-center space-x-2 bg-white border border-gray-200 py-3 rounded-2xl shadow-sm hover:shadow-md hover:border-gold-500 transition-all font-semibold text-sm mb-8">
-                <i class="fas fa-plus text-gold-500 text-xs"></i>
-                <span>New Chat</span>
-            </button>
-            
-            <div class="flex-1 overflow-y-auto chat-scroll pr-2">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 ml-2">Recent History</p>
-                <div id="historyList" class="space-y-1"></div>
+    <section id="chatView" class="view-container flex-col bg-white">
+        <header class="h-20 border-b border-gray-50 flex items-center justify-between px-12 ml-24">
+            <h2 class="text-xl font-bold text-gray-800">Khittara <span class="text-gold-500">.</span></h2>
+            <div id="statusDot" class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_10px_#10b981]"></div>
+        </header>
+
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-12 space-y-8 chat-scroll max-w-4xl mx-auto w-full pb-32 ml-24 md:ml-auto">
             </div>
 
-            <div class="pt-4 border-t border-gray-200 space-y-1">
-                <button onclick="toggleSettings()" class="flex items-center space-x-3 text-gray-500 hover:text-gold-600 transition-colors w-full p-2">
-                    <i class="fas fa-cog"></i>
-                    <span class="text-sm font-medium">Settings</span>
-                </button>
-                <button onclick="switchView('home')" class="flex items-center space-x-3 text-gray-500 hover:text-gold-600 transition-colors w-full p-2">
-                    <i class="fas fa-home"></i>
-                    <span class="text-sm font-medium">Home Screen</span>
+        <footer class="p-8 bg-gradient-to-t from-white via-white to-transparent ml-24">
+            <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border border-gray-100 focus-within:bg-white focus-within:shadow-xl focus-within:border-gold-400 transition-all">
+                <input type="text" id="chatInput" placeholder="Type a message..." 
+                       class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-3 outline-none text-gray-700">
+                <button onclick="sendMessage()" class="bg-gold-500 hover:bg-gold-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md">
+                    <i class="fas fa-paper-plane text-sm"></i>
                 </button>
             </div>
-        </aside>
-
-        <main class="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
-            <header class="h-16 border-b border-gray-50 flex items-center justify-between px-8">
-                <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Khittara Engine</span>
-                <div id="statusDot" class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_#10b981]"></div>
-            </header>
-
-            <div id="chatMessages" class="flex-1 overflow-y-auto p-8 md:p-12 space-y-8 chat-scroll max-w-4xl mx-auto w-full pb-32"></div>
-
-            <footer class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-white">
-                <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border border-gray-200 focus-within:bg-white focus-within:shadow-xl focus-within:border-gold-500 transition-all">
-                    <input type="text" id="chatInput" placeholder="Type your message..." 
-                           class="flex-1 bg-transparent border-none focus:ring-0 px-6 py-2 outline-none text-gray-800">
-                    <button onclick="sendMessage()" class="bg-gold-500 hover:bg-gold-600 text-white w-10 h-10 rounded-full shadow-md flex items-center justify-center">
-                        <i class="fas fa-paper-plane text-sm"></i>
-                    </button>
-                </div>
-            </footer>
-        </main>
+        </footer>
     </section>
 
-    <div id="settingsModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center" style="z-index: 999;">
-        <div class="bg-white w-full max-w-md p-8 rounded-[32px] shadow-2xl mx-4">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Settings</h2>
-                <button onclick="toggleSettings()" class="text-gray-400 p-2"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="space-y-4">
-                <input type="password" id="apiKeyInput" placeholder="API Key" class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm outline-none">
-                <input type="text" id="modelInput" placeholder="Model Name" class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm outline-none">
-                <button onclick="saveSettings()" class="w-full bg-gold-500 text-white py-4 rounded-2xl font-bold">Save Changes</button>
-                <button onclick="clearAllHistory()" class="w-full text-red-400 text-xs py-2">Clear History</button>
+    <div id="settingsModal" class="fixed inset-0 bg-black/20 backdrop-blur-md hidden items-center justify-center z-[2000]">
+        <div class="bg-white w-full max-w-md p-10 rounded-[40px] shadow-2xl mx-4">
+            <h2 class="text-2xl font-bold mb-8">Settings</h2>
+            <div class="space-y-6">
+                <input type="password" id="apiKeyInput" placeholder="API Key" class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none border border-transparent focus:border-gold-300">
+                <input type="text" id="modelInput" placeholder="Model (e.g. gemini-1.5-flash)" class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none border border-transparent focus:border-gold-300">
+                <button onclick="saveSettings()" class="w-full bg-gold-500 text-white py-4 rounded-2xl font-bold hover:bg-gold-600 shadow-lg shadow-gold-100">Save Changes</button>
+                <button onclick="toggleSettings()" class="w-full text-gray-400 text-xs mt-2">Close</button>
             </div>
         </div>
     </div>
@@ -129,11 +160,9 @@
     <script>
         let currentChatId = null;
 
-        // View Switcher Function
         function switchView(viewName) {
             const home = document.getElementById('homeView');
             const chat = document.getElementById('chatView');
-            
             if (viewName === 'home') {
                 home.classList.add('view-active');
                 chat.classList.remove('view-active');
@@ -146,7 +175,6 @@
         window.onload = () => {
             document.getElementById('apiKeyInput').value = localStorage.getItem('khittara_api_key') || '';
             document.getElementById('modelInput').value = localStorage.getItem('khittara_model') || 'gemini-1.5-flash';
-            loadHistoryList();
         };
 
         function toggleSettings() {
@@ -188,67 +216,20 @@
 
         function appendMessage(role, text) {
             const msgDiv = document.createElement('div');
-            msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-6`;
+            msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-8`;
             const htmlContent = role === 'ai' ? marked.parse(text) : text;
-            msgDiv.innerHTML = `<div class="${role === 'user' ? 'bg-gold-500 text-white shadow-md' : 'bg-gray-100 text-gray-800 prose shadow-sm'} p-5 rounded-3xl max-w-[85%]">${htmlContent}</div>`;
+            msgDiv.innerHTML = `<div class="${role === 'user' ? 'bg-gold-500 text-white shadow-lg' : 'bg-gray-100 text-gray-800 prose'} p-6 rounded-[2rem] max-w-[85%]">${htmlContent}</div>`;
             document.getElementById('chatMessages').appendChild(msgDiv);
             document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-            saveToHistory(role, text);
             msgDiv.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
-        }
-
-        function saveToHistory(role, text) {
-            let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
-            if (!history[currentChatId]) history[currentChatId] = { title: text.substring(0, 30) + '...', messages: [] };
-            history[currentChatId].messages.push({ role, text });
-            localStorage.setItem('khittara_history', JSON.stringify(history));
-            loadHistoryList();
-        }
-
-        function loadHistoryList() {
-            const history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
-            const list = document.getElementById('historyList');
-            list.innerHTML = '';
-            Object.keys(history).reverse().forEach(id => {
-                const item = document.createElement('div');
-                item.className = 'sidebar-item text-xs text-gray-600 truncate flex items-center space-x-2';
-                item.innerHTML = `<i class="far fa-comment-alt text-gold-500"></i> <span>${history[id].title}</span>`;
-                item.onclick = () => loadChat(id);
-                list.appendChild(item);
-            });
-        }
-
-        function loadChat(id) {
-            currentChatId = id;
-            const history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
-            document.getElementById('chatMessages').innerHTML = '';
-            switchView('chat');
-            history[id].messages.forEach(msg => {
-                const msgDiv = document.createElement('div');
-                msgDiv.className = `flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-6`;
-                const htmlContent = msg.role === 'ai' ? marked.parse(msg.text) : msg.text;
-                msgDiv.innerHTML = `<div class="${msg.role === 'user' ? 'bg-gold-500 text-white' : 'bg-gray-100 text-gray-800 prose'} p-5 rounded-3xl max-w-[85%]">${htmlContent}</div>`;
-                document.getElementById('chatMessages').appendChild(msgDiv);
-                msgDiv.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
-            });
-            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-        }
-
-        function clearAllHistory() {
-            if(confirm("Delete all history?")) {
-                localStorage.removeItem('khittara_history');
-                loadHistoryList();
-                newChat();
-                toggleSettings();
-            }
         }
 
         function showThinking() {
             if(document.getElementById('thinkingIndicator')) return;
             const div = document.createElement('div');
             div.id = 'thinkingIndicator';
-            div.className = 'flex justify-start mb-6';
-            div.innerHTML = `<div class="bg-gray-100 p-4 rounded-3xl flex items-center space-x-3"><i class="fas fa-microchip thinking-glow"></i><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Thinking...</span></div>`;
+            div.className = 'flex justify-start mb-8';
+            div.innerHTML = `<div class="bg-gray-50 p-4 rounded-3xl flex items-center space-x-3"><i class="fas fa-microchip thinking-glow"></i><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Khittara is thinking...</span></div>`;
             document.getElementById('chatMessages').appendChild(div);
             document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
         }
@@ -270,7 +251,6 @@
             }
         }
 
-        // Event Listeners for Input
         document.getElementById('initialInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') startChat(); });
         document.getElementById('chatInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') sendMessage(); });
     </script>
