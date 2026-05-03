@@ -19,8 +19,7 @@ const AI_CONFIG = {
                 contents: [{ 
                     role: "user",
                     parts: [{ 
-                        text: `You are Khittara AI. When answering, please provide a brief thought process or explanation before giving the final formatted answer. 
-                               Use Markdown for structural clarity (bolding, lists, code blocks).
+                        text: `You are Khittara AI. Provide a helpful and well-formatted response using Markdown. 
                                Prompt: ${prompt}` 
                     }] 
                 }]
@@ -34,7 +33,7 @@ const AI_CONFIG = {
         }
 
         if (!data.candidates || data.candidates.length === 0) {
-            throw new Error("AI ဆီမှ အဖြေမရရှိပါ။ Key သို့မဟုတ် Model ကို ပြန်စစ်ပါ။");
+            throw new Error("AI ဆီမှ အဖြေမရရှိပါ။");
         }
         
         return data.candidates[0].content.parts[0].text;
