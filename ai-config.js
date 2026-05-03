@@ -1,19 +1,14 @@
 // AI Configuration & Logic - Khittara AI
 const AI_CONFIG = {
-    // API Key ရယူခြင်း
     getApiKey: () => localStorage.getItem('khittara_api_key'),
-    
-    // Model Name ရယူခြင်း
     getModel: () => localStorage.getItem('khittara_model') || 'gemini-2.5-flash',
     
-    // API Call လုပ်ဆောင်ခြင်း
     async fetchAIResponse(prompt) {
         const apiKey = this.getApiKey();
         const modelName = this.getModel();
         
         if (!apiKey) throw new Error("Settings ထဲတွင် API Key အရင်ထည့်ပေးပါ။");
 
-        // Model path format ကို သန့်စင်ခြင်း
         const cleanModel = modelName.includes('/') ? modelName.split('/').pop() : modelName;
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${apiKey}`;
 
@@ -24,12 +19,9 @@ const AI_CONFIG = {
                 contents: [{ 
                     role: "user",
                     parts: [{ 
-                        text: `You are Khittara AI, a helpful and professional assistant. 
-                               Always use appropriate Markdown for formatting, such as:
-                               - Use triple backticks for code blocks with language names.
-                               - Use bold for emphasis.
-                               - Use bullet points for lists.
-                               Answer the following: ${prompt}` 
+                        text: `You are Khittara AI. When answering, please provide a brief thought process or explanation before giving the final formatted answer. 
+                               Use Markdown for structural clarity (bolding, lists, code blocks).
+                               Prompt: ${prompt}` 
                     }] 
                 }]
             })
