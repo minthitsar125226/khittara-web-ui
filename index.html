@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khittara AI - Professional</title>
+    <title>Khittara AI - Interactive UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <link rel="stylesheet" href="assets/css/style.css">
     <script src="ai-config.js"></script>
 </head>
-<body class="bg-white">
+<body class="bg-white transition-colors duration-300">
+
+    <button id="menuToggleBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <nav class="floating-sidebar">
-        <div class="flex items-center px-4 mb-8">
-            <div class="w-8 h-8 bg-yellow-500 rounded-lg mr-3 flex items-center justify-center text-white font-bold">K</div>
-            <span class="text-xl font-bold tracking-tight sidebar-logo-text">Khittara <span class="text-yellow-500">.</span></span>
+        <div class="flex justify-between items-center px-4 mb-8">
+            <span class="text-xl font-bold tracking-tight">Khittara <span class="text-yellow-500">.</span></span>
+            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-red-500 transition">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         
         <div class="sidebar-item active-tab" onclick="switchView('home')">
@@ -41,11 +47,11 @@
     </nav>
 
     <main>
-        <section id="homeView" class="view-container view-active flex-col items-center justify-center">
+        <section id="homeView" class="view-container view-active flex flex-col items-center justify-center">
             <div class="max-w-2xl w-full text-center px-6">
                 <h1 class="text-5xl font-extrabold mb-4">Khittara <span class="text-yellow-500">.</span></h1>
                 <p class="text-gray-500 mb-10">Empowering your vision with AI.</p>
-                <div class="bg-white dark:bg-zinc-900 shadow-2xl rounded-3xl flex p-2 border border-gray-100 dark:border-zinc-800 transition-all">
+                <div class="bg-white dark:bg-zinc-900 shadow-2xl rounded-3xl flex p-2 border border-gray-100 dark:border-zinc-800">
                     <input type="text" id="initialInput" class="flex-1 bg-transparent px-6 py-4 outline-none text-lg" placeholder="Message Khittara...">
                     <button onclick="sendMessage('initialInput')" class="bg-yellow-500 text-white w-14 h-14 rounded-2xl shadow-lg"><i class="fas fa-paper-plane"></i></button>
                 </div>
@@ -65,31 +71,27 @@
 
     <div id="settingsModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[10001]">
         <div class="bg-white dark:bg-zinc-900 w-full max-w-md p-8 rounded-[35px] shadow-2xl mx-4">
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex justify-between items-center mb-6">
                 <h2 id="modalTitle" class="text-2xl font-bold">Settings</h2>
-                <button onclick="toggleSettings()" class="text-gray-400"><i class="fas fa-times"></i></button>
+                <button onclick="toggleSettings()"><i class="fas fa-times text-gray-400"></i></button>
             </div>
-            <div class="space-y-6">
+            <div class="space-y-4">
                 <div>
                     <label class="text-xs font-bold text-gray-400 uppercase mb-2 block">Gemini API Key</label>
-                    <input type="password" id="apiKeyInput" class="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl outline-none border border-transparent focus:border-yellow-500">
+                    <input type="password" id="apiKeyInput" class="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl outline-none">
                 </div>
                 <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
-                    <span id="darkModeLabel" class="font-medium">Dark Mode</span>
+                    <span id="darkModeLabel">Dark Mode</span>
                     <button onclick="toggleTheme()" class="text-2xl text-yellow-500"><i class="fas fa-toggle-on"></i></button>
                 </div>
                 <div>
                     <label id="langLabel" class="text-xs font-bold text-gray-400 uppercase mb-2 block">Language</label>
                     <select id="langSelect" class="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl outline-none">
-                        <option value="en">English (US)</option>
-                        <option value="my">မြန်မာဘာသာ (Myanmar)</option>
+                        <option value="en">English</option>
+                        <option value="my">မြန်မာစာ</option>
                     </select>
                 </div>
-                <div class="pt-4 border-t border-gray-100 dark:border-zinc-800 flex gap-4">
-                    <button id="signInBtn" class="flex-1 py-3 border rounded-xl font-bold dark:border-zinc-700">Sign In</button>
-                    <button id="signUpBtn" class="flex-1 py-3 bg-zinc-900 text-white rounded-xl font-bold dark:bg-white dark:text-zinc-900">Sign Up</button>
-                </div>
-                <button id="saveBtn" onclick="saveSettings()" class="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold shadow-lg">Save Changes</button>
+                <button id="saveBtn" onclick="saveSettings()" class="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold">Save Changes</button>
             </div>
         </div>
     </div>
