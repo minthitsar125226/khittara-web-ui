@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khittara AI - Navigation Fixed</title>
+    <title>Khittara AI - Personal Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="ai-config.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -35,15 +36,15 @@
     <section id="homeView" class="h-full flex flex-col items-center justify-center p-6 space-y-12 fade-in">
         <div class="text-center space-y-2">
             <h1 class="text-5xl font-bold tracking-tight">Khittara <span class="text-gold-500 text-6xl">.</span></h1>
-            <p class="text-gray-400 font-light">Your intelligent assistant, redefined.</p>
+            <p class="text-gray-400 font-light">The next generation AI platform.</p>
         </div>
 
         <div class="w-full max-w-2xl relative group">
             <div class="absolute -inset-1 bg-gradient-to-r from-gold-100 to-gold-50 rounded-[50px] blur opacity-20 group-focus-within:opacity-100 transition duration-1000"></div>
             <div class="relative flex items-center bg-white border border-gray-100 oval-input p-2 shadow-sm focus-within:shadow-lg transition-all">
-                <input type="text" id="initialInput" placeholder="Ask Khittara anything..." 
+                <input type="text" id="initialInput" placeholder="Ask anything to Khittara..." 
                        class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-5 text-lg outline-none">
-                <button onclick="startChat()" class="bg-gold-500 hover:bg-gold-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center">
+                <button onclick="startChat()" class="bg-gold-500 hover:bg-gold-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-90">
                     <i class="fas fa-arrow-up text-xl"></i>
                 </button>
             </div>
@@ -57,7 +58,7 @@
                 Khittara <span class="text-gold-500 ml-1">.</span>
             </h2>
             <div class="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                <span id="statusLabel">Gemini 1.5 Flash</span>
+                <span id="activeModelLabel">Model Ready</span>
                 <div id="statusDot" class="w-2 h-2 bg-green-500 rounded-full"></div>
             </div>
         </header>
@@ -66,8 +67,8 @@
             </div>
 
         <footer class="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-white via-white to-transparent">
-            <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border border-gray-100 focus-within:bg-white focus-within:border-gold-300 focus-within:shadow-xl transition-all">
-                <input type="text" id="chatInput" placeholder="Follow up..." 
+            <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border border-gray-100 focus-within:bg-white focus-within:border-gold-300 focus-within:shadow-xl transition-all shadow-sm">
+                <input type="text" id="chatInput" placeholder="Send a message..." 
                        class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-3 outline-none">
                 <button onclick="sendMessage()" class="bg-gold-500 hover:bg-gold-600 text-white w-10 h-10 rounded-full shadow-md">
                     <i class="fas fa-paper-plane"></i>
@@ -83,9 +84,17 @@
                 <button onclick="toggleSettings()" class="text-gray-400"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-4 pb-4 border-b border-gray-50">
+                    <button class="py-3 px-4 rounded-2xl bg-black text-white text-sm font-medium hover:bg-gray-800 transition">Login</button>
+                    <button class="py-3 px-4 rounded-2xl border border-gray-100 text-sm hover:bg-gray-50 transition">Register</button>
+                </div>
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Gemini API Key</label>
                     <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none border border-transparent focus:border-gold-300">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Preferred Model</label>
+                    <input type="text" id="modelInput" placeholder="gemini-2.5-flash" class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none border border-transparent focus:border-gold-300">
                 </div>
                 <button onclick="saveSettings()" class="w-full bg-gold-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-gold-100 active:scale-95 transition-all">Save Changes</button>
             </div>
@@ -99,9 +108,17 @@
         const chatInput = document.getElementById('chatInput');
         const chatMessages = document.getElementById('chatMessages');
 
+        // Initialize UI with Settings
         window.onload = () => {
             document.getElementById('apiKeyInput').value = localStorage.getItem('khittara_api_key') || '';
+            document.getElementById('modelInput').value = localStorage.getItem('khittara_model') || 'gemini-2.5-flash';
+            updateModelLabel();
         };
+
+        function updateModelLabel() {
+            const m = localStorage.getItem('khittara_model') || 'gemini-2.5-flash';
+            document.getElementById('activeModelLabel').innerText = m;
+        }
 
         function toggleSettings() {
             document.getElementById('settingsModal').classList.toggle('hidden-view');
@@ -109,21 +126,19 @@
 
         function saveSettings() {
             const key = document.getElementById('apiKeyInput').value.trim();
-            if(key) {
-                localStorage.setItem('khittara_api_key', key);
-                alert('API Key saved!');
-                toggleSettings();
-            }
+            const model = document.getElementById('modelInput').value.trim();
+            if(key) localStorage.setItem('khittara_api_key', key);
+            if(model) localStorage.setItem('khittara_model', model);
+            updateModelLabel();
+            toggleSettings();
         }
 
-        // Home View ကိုပြန်သွားမည့် Function
         function goHome() {
             chatView.classList.add('hidden-view');
             homeView.classList.remove('hidden-view');
-            // Chat history ကို ရှင်းထုတ်ချင်ရင် အောက်က line ကိုသုံးပါ (optional)
-            // chatMessages.innerHTML = ''; 
         }
 
+        // Enter Key Handling
         initialInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') startChat(); });
         chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
@@ -156,28 +171,16 @@
         }
 
         async function processAI(prompt) {
-            const apiKey = localStorage.getItem('khittara_api_key');
-            const statusLabel = document.getElementById('statusLabel');
             const statusDot = document.getElementById('statusDot');
-            if (!apiKey) {
-                appendMessage('ai', 'ကျေးဇူးပြု၍ Setting ထဲမှာ Gemini API Key ထည့်ပေးပါ။');
-                return;
-            }
-            statusLabel.innerText = 'Thinking...';
             statusDot.className = 'w-2 h-2 bg-yellow-500 rounded-full animate-pulse';
+
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await response.json();
-                const aiResponse = data.candidates[0].content.parts[0].text;
+                // `AI_CONFIG` is defined in `ai-config.js`
+                const aiResponse = await AI_CONFIG.fetchAIResponse(prompt);
                 appendMessage('ai', aiResponse);
             } catch (error) {
-                appendMessage('ai', 'Error: API နဲ့ ချိတ်ဆက်၍ မရပါ။');
+                appendMessage('ai', `Error: ${error.message}`);
             } finally {
-                statusLabel.innerText = 'Gemini 1.5 Flash';
                 statusDot.className = 'w-2 h-2 bg-green-500 rounded-full';
             }
         }
