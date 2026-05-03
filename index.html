@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khittara AI - Elegant Gold UI</title>
+    <title>Khittara AI - Manus Style UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script>
@@ -11,132 +11,156 @@
             theme: {
                 extend: {
                     colors: {
-                        // Custom Gold Colors
                         'gold': {
-                            100: '#fef9c3',
-                            500: '#eab308', // Primary Gold
-                            600: '#ca8a04', // Hover Gold
-                            700: '#a16207', // Darker Gold for text
+                            50: '#fffbeb', 100: '#fef9c3', 500: '#eab308', 600: '#ca8a04', 700: '#a16207',
                         },
-                        'neutral-white': '#fafafa', // Slightly off-white for background
+                        'neutral-white': '#fafafa',
+                        'bg-panel': '#ffffff',
                     }
                 }
             }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;700&family=Poppins:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         
         body { 
-            background-color: #ffffff; 
-            color: #1f2937; /* Gray 800 */
-            font-family: 'Poppins', 'Noto Sans Myanmar', sans-serif; 
+            background-color: #fafafa; 
+            color: #1f2937; 
+            font-family: 'Poppins', sans-serif; 
         }
-        .chat-scroll::-webkit-scrollbar { width: 5px; }
-        .chat-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
-        .chat-scroll::-webkit-scrollbar-thumb:hover { background: #ca8a04; }
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .scroll-area::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden bg-neutral-white">
+<body class="flex h-screen overflow-hidden text-[14px]">
 
-    <aside class="w-20 lg:w-64 border-r border-gray-100 flex flex-col p-4 space-y-10 bg-white shadow-sm z-10">
-        <div class="text-3xl font-extrabold text-gold-500 text-center lg:text-left lg:px-4 tracking-tight">K<span class="text-gray-900 hidden lg:inline">hittara</span>.</div>
-        <nav class="flex-1 space-y-3">
-            <a href="#" class="flex items-center space-x-4 p-3.5 rounded-xl bg-gold-100 text-gold-700 font-medium">
-                <i class="fas fa-comment-alt text-gold-600"></i> 
-                <span class="hidden lg:inline">Chat</span>
+    <aside class="w-16 flex flex-col items-center py-6 border-r border-gray-100 bg-bg-panel z-20">
+        <div class="text-3xl font-extrabold text-gold-500 mb-10 tracking-tight">K.</div>
+        <nav class="flex-1 space-y-4">
+            <a href="#" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gold-100 text-gold-700">
+                <i class="fas fa-comment-alt text-lg"></i>
             </a>
-            <a href="#" class="flex items-center space-x-4 p-3.5 rounded-xl hover:bg-gray-50 transition text-gray-500 hover:text-gray-900">
-                <i class="fas fa-history"></i> 
-                <span class="hidden lg:inline">History</span>
+            <a href="#" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-50 transition text-gray-400 hover:text-gray-900">
+                <i class="fas fa-folder text-lg"></i>
             </a>
-            <button onclick="toggleSettings()" class="w-full flex items-center space-x-4 p-3.5 rounded-xl hover:bg-gray-50 transition text-gray-500 hover:text-gray-900">
-                <i class="fas fa-cog"></i> 
-                <span class="hidden lg:inline">Settings</span>
+            <button onclick="toggleSettings()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-50 transition text-gray-400 hover:text-gray-900">
+                <i class="fas fa-cog text-lg"></i>
             </button>
         </nav>
-        <div class="border-t border-gray-100 pt-4 text-center text-xs text-gray-400 hidden lg:block">
-            © 2024 Khittara
-        </div>
+        <img src="https://ui-avatars.com/api/?name=User&background=ca8a04&color=fff" alt="User" class="w-10 h-10 rounded-full border-2 border-gold-100">
     </aside>
 
-    <main class="flex-1 flex flex-col relative bg-neutral-white">
-        <header class="p-5 border-b border-gray-100 flex justify-between items-center bg-white">
-            <h1 class="text-xl font-semibold text-gray-900">New Chat</h1>
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-2 text-gray-500 text-sm bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+    <section class="w-72 border-r border-gray-100 bg-bg-panel flex flex-col z-10">
+        <header class="p-5 border-b border-gray-100 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">Chats</h2>
+            <button class="bg-gold-500 hover:bg-gold-600 text-white w-8 h-8 rounded-lg transition text-xs">
+                <i class="fas fa-plus"></i>
+            </button>
+        </header>
+        
+        <div class="flex-1 overflow-y-auto p-4 space-y-2.5 scroll-area">
+            <a href="#" class="block p-3 rounded-xl bg-gold-50 border border-gold-100 group">
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="font-medium text-gold-700 truncate pr-2">Project Khittara UI</span>
+                    <span class="text-xs text-gold-600/80">1h ago</span>
+                </div>
+                <p class="text-xs text-gold-600 line-clamp-2 group-hover:text-gold-700">Update main dashboard layout to Manus style...</p>
+            </a>
+            <a href="#" class="block p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 border border-transparent hover:border-gray-100">
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="font-medium text-gray-900 truncate pr-2">Gemini API Integration</span>
+                    <span class="text-xs text-gray-400">2d ago</span>
+                </div>
+                <p class="text-xs text-gray-500 line-clamp-2">How to store API key in LocalStorage securely...</p>
+            </a>
+        </div>
+    </section>
+
+    <main class="flex-1 flex flex-col bg-neutral-white">
+        <header class="p-5 border-b border-gray-100 flex justify-between items-center bg-bg-panel">
+            <div class="flex items-center space-x-3">
+                 <div class="p-2.5 bg-gold-100 text-gold-600 rounded-xl text-lg"><i class="fas fa-comment-alt"></i></div>
+                 <div>
+                    <h1 class="text-xl font-bold text-gray-900">Project Khittara UI</h1>
+                    <p class="text-xs text-gray-500">Started 3 hours ago</p>
+                 </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 text-gray-500 text-sm bg-gray-50 px-3.5 py-1.5 rounded-full border border-gray-100">
                     <span>Gemini 1.5 Flash</span>
                     <div class="w-2.5 h-2.5 bg-green-500 rounded-full"></div>
                 </div>
-                <img src="https://ui-avatars.com/api/?name=User&background=ca8a04&color=fff" alt="User" class="w-10 h-10 rounded-full border-2 border-gold-100">
+                <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-share-alt"></i></button>
             </div>
         </header>
 
-        <section class="flex-1 overflow-y-auto p-6 chat-scroll max-w-4xl mx-auto w-full">
-            <div class="flex flex-col space-y-8">
-                
-                <div class="flex items-start space-x-3">
-                    <img src="https://ui-avatars.com/api/?name=K&background=fff&color=eab308" alt="AI" class="w-9 h-9 rounded-full border border-gold-100 mt-1">
-                    <div class="bg-white p-5 rounded-2xl rounded-tl-none self-start shadow-sm border border-gray-100 max-w-[85%] text-[15px] leading-relaxed">
-                        မင်္ဂလာပါ။ ကျွန်တော်က <span class="font-semibold text-gold-700">Khittara AI</span> ပါ။ အဖြူရောင်နဲ့ ရွှေရောင် Theme လေးမှာ ဘာများ ကူညီပေးရမလဲ?
+        <section class="flex-1 overflow-y-auto p-8 space-y-10 scroll-area">
+             <div class="flex items-start space-x-4">
+                <img src="https://ui-avatars.com/api/?name=K&background=fff&color=eab308" alt="AI" class="w-10 h-10 rounded-xl border border-gold-100 shadow-inner">
+                <div class="flex-1 space-y-4">
+                    <div class="font-semibold text-gold-700">Khittara AI</div>
+                    <div class="bg-bg-panel p-6 rounded-3xl rounded-tl-none shadow-sm border border-gray-100 text-[15px] leading-relaxed max-w-[90%]">
+                        မင်္ဂလာပါ။ <span class="font-semibold text-gold-700">Manus AI</span> Style UI အသစ်လေးကတော့ အသင့်ဖြစ်ပါပြီ။ ပိုပြီး Dashboard ဆန်ဆန်နဲ့ Column ၃ ခု ခွဲထားပါတယ်။
                     </div>
                 </div>
+            </div>
 
-                <div class="flex items-start space-x-3 justify-end">
-                    <div class="bg-gold-500 p-5 rounded-2xl rounded-tr-none self-end shadow-sm max-w-[85%] text-[15px] leading-relaxed text-white">
-                        ဟလို! UI အသစ်လေးက တော်တော်လှတာပဲ။
+            <div class="flex items-start space-x-4 justify-end">
+                <div class="flex-1 space-y-4 text-right">
+                    <div class="font-semibold text-gray-900">You</div>
+                    <div class="bg-gold-500 p-6 rounded-3xl rounded-tr-none shadow-sm text-[15px] leading-relaxed text-white max-w-[90%] inline-block text-left">
+                        ဟုတ်တယ်! ဒါမျိုးကို ပြောတာ။ ပိုကျယ်ကျယ်ပြန့်ပြန့်နဲ့ အသုံးရလွယ်တဲ့ ပုံစံပေါ့။
                     </div>
                 </div>
-
+                <img src="https://ui-avatars.com/api/?name=User&background=ca8a04&color=fff" alt="User" class="w-10 h-10 rounded-xl border border-gold-100 shadow-inner">
             </div>
         </section>
 
-        <footer class="p-6 bg-neutral-white">
-            <div class="max-w-4xl mx-auto flex items-center bg-white rounded-3xl p-2.5 shadow-lg border border-gray-100 focus-within:border-gold-300 focus-within:ring-2 focus-within:ring-gold-100 transition-all duration-150">
-                <input type="text" placeholder="Type your message to Khittara..." class="flex-1 bg-transparent border-none focus:ring-0 px-5 py-3 outline-none text-gray-900 placeholder:text-gray-400">
-                <button class="bg-gold-500 hover:bg-gold-600 text-white p-3.5 px-6 rounded-2xl transition-all duration-150 shadow-sm hover:shadow-md">
-                    <i class="fas fa-paper-plane"></i>
+        <footer class="p-6 bg-bg-panel border-t border-gray-100">
+            <div class="max-w-5xl mx-auto flex items-center bg-neutral-white rounded-2xl p-2.5 border border-gray-100 shadow-inner focus-within:border-gold-300 transition-all duration-150">
+                <input type="text" placeholder="Explain your concept, Khittara will handle the details..." class="flex-1 bg-transparent border-none focus:ring-0 px-5 py-3 outline-none text-gray-900 placeholder:text-gray-400">
+                <button class="bg-gold-500 hover:bg-gold-600 text-white p-3.5 px-6 rounded-xl transition-all duration-150 shadow-sm">
+                    <i class="fas fa-paper-plane mr-2"></i> Send
                 </button>
             </div>
         </footer>
     </main>
 
-    <div id="settingsModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center hidden z-50">
-        <div class="bg-white border border-gray-100 w-full max-w-lg p-8 rounded-3xl shadow-2xl transition-all duration-300 scale-95" id="modalContent">
-            <div class="flex justify-between items-center mb-7">
-                <h2 class="text-2xl font-bold text-gray-900">Profile & Settings</h2>
+    <div id="settingsModal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-white border border-gray-100 w-full max-w-lg p-9 rounded-3xl shadow-2xl transition-all duration-300 scale-95" id="modalContent">
+            <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-5">
+                <h2 class="text-2xl font-bold text-gray-900">Khittara Settings</h2>
                 <button onclick="toggleSettings()" class="text-gray-400 hover:text-gray-600 transition p-2 rounded-full hover:bg-gray-100">
-                    <i class="fas fa-times"></i>
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
             
-            <div class="space-y-6">
+            <div class="space-y-7">
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-2.5">Default Language</label>
+                    <label class="block text-sm font-medium text-gray-600 mb-3">Language</label>
                     <div class="relative">
-                        <select class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-100 appearance-none cursor-pointer">
+                        <select class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4.5 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-100 appearance-none cursor-pointer">
                             <option>Burmese (မြန်မာ)</option>
                             <option>English</option>
                         </select>
-                        <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                        <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-2.5">Gemini API Key</label>
+                    <label class="block text-sm font-medium text-gray-600 mb-3">Gemini API Key</label>
                     <div class="relative">
-                        <i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-gold-500"></i>
-                        <input type="password" placeholder="AIzaSy..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 pl-12 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-100">
+                        <i class="fas fa-key absolute left-5 top-1/2 -translate-y-1/2 text-gold-500"></i>
+                        <input type="password" placeholder="AIzaSy..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4.5 pl-14 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-100">
                     </div>
-                    <p class="text-xs text-gray-400 mt-2.5 italic flex items-center">
-                        <i class="fas fa-info-circle mr-1.5"></i> Stored in your local browser only.
-                    </p>
+                    <p class="text-xs text-gray-400 mt-3 italic flex items-center"><i class="fas fa-info-circle mr-2"></i> Stored in your local browser only.</p>
                 </div>
                 
-                <div class="pt-4 border-t border-gray-100 mt-8 flex space-x-3 justify-end">
-                     <button onclick="toggleSettings()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-medium transition">Cancel</button>
-                     <button onclick="toggleSettings()" class="bg-gold-500 hover:bg-gold-600 text-white py-3 px-6 rounded-xl font-semibold transition shadow-sm hover:shadow">Save Changes</button>
+                <div class="pt-6 border-t border-gray-100 mt-9 flex space-x-4 justify-end">
+                     <button onclick="toggleSettings()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3.5 px-7 rounded-xl font-medium transition">Cancel</button>
+                     <button onclick="toggleSettings()" class="bg-gold-500 hover:bg-gold-600 text-white py-3.5 px-7 rounded-xl font-semibold transition shadow-sm hover:shadow">Save Changes</button>
                 </div>
             </div>
         </div>
