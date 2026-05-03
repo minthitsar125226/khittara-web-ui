@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@@v4
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
@@ -32,7 +32,6 @@ jobs:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           echo "Checking file location..."
-          # ဖိုင်ဘယ်မှာရှိလဲဆိုတာ ရှာခိုင်းလိုက်တာပါ
           FILE_PATH=$(find . -name "ai_processor.py" | head -n 1)
           if [ -z "$FILE_PATH" ]; then
             echo "Error: ai_processor.py not found anywhere!"
