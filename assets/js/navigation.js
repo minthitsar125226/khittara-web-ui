@@ -1,6 +1,7 @@
 // ၁။ Sidebar ပွင့်/ပိတ် လုပ်ပေးတဲ့ function ကို Global သတ်မှတ်ခြင်း
 window.toggleSidebar = function() {
     document.body.classList.toggle('sidebar-open');
+    console.log('Sidebar toggled. Current state:', document.body.classList.contains('sidebar-open') ? 'open' : 'closed');
 };
 
 // ၂။ ဘာသာစကားအတွက် စာသားများ
@@ -23,6 +24,7 @@ dragBtn.addEventListener('mousedown', (e) => {
     startTime = Date.now(); // နှိပ်လိုက်တဲ့အချိန်မှတ်မယ်
     startX = e.clientX;
     startY = e.clientY;
+    console.log('mousedown: started dragging detection.');
 });
 
 window.addEventListener('mousemove', (e) => {
@@ -35,6 +37,7 @@ window.addEventListener('mousemove', (e) => {
         hasMoved = true;
         dragBtn.style.left = Math.max(10, Math.min(window.innerWidth - 64, e.clientX - 27)) + 'px';
         dragBtn.style.top = Math.max(10, Math.min(window.innerHeight - 64, e.clientY - 27)) + 'px';
+        // console.log('mousemove: dragging button.'); // Too verbose, uncomment only for specific drag debugging
     }
 });
 
@@ -43,7 +46,10 @@ window.addEventListener('mouseup', () => {
         const duration = Date.now() - startTime;
         // ၂၀၀ မီလီစက္ကန့်ထက်နည်းရင် သို့မဟုတ် အများကြီးမရွေ့ရင် "Click" လို့ယူဆပြီး Sidebar ဖွင့်မယ်
         if (duration < 200 || !hasMoved) {
+            console.log('mouseup: detected click, toggling sidebar.');
             window.toggleSidebar();
+        } else {
+            console.log('mouseup: detected drag, not toggling sidebar.');
         }
         isDragging = false;
     }
@@ -56,6 +62,7 @@ dragBtn.addEventListener('touchstart', (e) => {
     startTime = Date.now();
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
+    console.log('touchstart: started dragging detection (mobile).');
 }, { passive: true });
 
 window.addEventListener('touchmove', (e) => {
@@ -67,6 +74,7 @@ window.addEventListener('touchmove', (e) => {
         hasMoved = true;
         dragBtn.style.left = Math.max(10, Math.min(window.innerWidth - 64, e.touches[0].clientX - 27)) + 'px';
         dragBtn.style.top = Math.max(10, Math.min(window.innerHeight - 64, e.touches[0].clientY - 27)) + 'px';
+        // console.log('touchmove: dragging button (mobile).'); // Too verbose
     }
 }, { passive: true });
 
@@ -74,7 +82,10 @@ window.addEventListener('touchend', () => {
     if (isDragging) {
         const duration = Date.now() - startTime;
         if (duration < 200 || !hasMoved) {
+            console.log('touchend: detected tap, toggling sidebar (mobile).');
             window.toggleSidebar();
+        } else {
+            console.log('touchend: detected drag, not toggling sidebar (mobile).');
         }
         isDragging = false;
     }
@@ -82,6 +93,7 @@ window.addEventListener('touchend', () => {
 
 // ၄။ View ပြောင်းတဲ့ Function
 window.switchView = function(viewName) {
+    console.log('Switching view to:', viewName);
     document.querySelectorAll('.view-container').forEach(v => {
         v.classList.remove('view-active');
         v.style.display = 'none';
@@ -90,12 +102,16 @@ window.switchView = function(viewName) {
     if (target) {
         target.classList.add('view-active');
         target.style.display = 'flex';
+        console.log(`View ${viewName}View activated.`);
+    } else {
+        console.warn(`Target view ${viewName}View not found.`);
     }
     document.body.classList.remove('sidebar-open');
 };
 
 // ၅။ ဘာသာစကား ပြောင်းလဲခြင်း
 window.applyLanguage = function(lang) {
+    console.log('Applying language:', lang);
     const t = translations[lang] || translations.en;
     const labels = document.querySelectorAll('.sidebar-label');
     if(labels.length >= 4) {
@@ -103,6 +119,8 @@ window.applyLanguage = function(lang) {
         labels[1].innerText = t.ai_chat;
         labels[2].innerText = t.lottery;
         labels[3].innerText = t.settings;
+    } else {
+        console.warn('Could not find enough sidebar labels to apply translations.');
     }
     if(document.querySelector('#homeView p')) document.querySelector('#homeView p').innerText = t.empower;
     if(document.getElementById('initialInput')) document.getElementById('initialInput').placeholder = t.ask_placeholder;
@@ -115,11 +133,14 @@ window.applyLanguage = function(lang) {
 // ၆။ Settings & Theme & Font Size
 window.toggleTheme = function() {
     document.body.classList.toggle('dark-mode');
-    localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    const newTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    localStorage.setItem('theme', newTheme);
+    console.log('Theme toggled. Current theme:', newTheme);
 };
 
 // New function to apply font size
 window.applyFontSize = function(size) {
+    console.log('Attempting to apply font size:', size);
     let fontSizeValue;
     switch(size) {
         case 'small':
@@ -134,9 +155,11 @@ window.applyFontSize = function(size) {
             break;
     }
     document.documentElement.style.setProperty('--base-font-size', fontSizeValue);
+    console.log('CSS Variable --base-font-size set to:', fontSizeValue);
 };
 
 window.toggleSettings = function() {
+    console.log('Toggling settings modal...');
     const modal = document.getElementById('settingsModal');
     if(modal) {
         modal.classList.toggle('hidden');
@@ -144,10 +167,14 @@ window.toggleSettings = function() {
 
         // When opening the settings modal, ensure the select elements reflect the current saved state
         if (!modal.classList.contains('hidden')) {
+            console.log('Settings modal opened. Populating fields...');
             // Language selection
             const langSelect = document.getElementById('langSelect');
             if (langSelect) {
                 langSelect.value = localStorage.getItem('language') || 'en';
+                console.log('Lang select populated with:', langSelect.value);
+            } else {
+                console.warn('Language select element (langSelect) not found.');
             }
 
             // API Key input
@@ -155,28 +182,43 @@ window.toggleSettings = function() {
             if (apiKeyInput) { 
                 const savedKey = localStorage.getItem('khittara_api_key');
                 if (savedKey) apiKeyInput.value = savedKey;
+                console.log('API Key input populated with saved key (if any).');
+            } else {
+                console.warn('API Key input element (apiKeyInput) not found.');
             }
 
             // Font size selection
             const fontSizeSelect = document.getElementById('fontSizeSelect');
             if (fontSizeSelect) {
                 fontSizeSelect.value = localStorage.getItem('font-size') || 'medium';
+                console.log('Font size select populated with:', fontSizeSelect.value);
+            } else {
+                console.warn('Font size select element (fontSizeSelect) not found.');
             }
+        } else {
+            console.log('Settings modal closed.');
         }
+    } else {
+        console.error('Settings modal element (settingsModal) not found!');
     }
 };
 
 window.saveSettings = function() {
+    console.log('Saving settings...');
     // Save Language setting
     const langSelect = document.getElementById('langSelect');
     const lang = langSelect ? langSelect.value : 'en'; // Default to 'en' if element not found
     localStorage.setItem('language', lang);
     window.applyLanguage(lang); // Apply language change immediately
+    console.log('Language setting saved:', lang);
 
     // Save API Key setting
     const apiKeyInput = document.getElementById('apiKeyInput');
     if (apiKeyInput) {
         localStorage.setItem('khittara_api_key', apiKeyInput.value);
+        console.log('API Key setting saved (value length:', apiKeyInput.value.length, ')');
+    } else {
+        console.warn('API Key input element (apiKeyInput) not found during save.');
     }
 
     // Save Font Size setting
@@ -184,29 +226,59 @@ window.saveSettings = function() {
     const fontSize = fontSizeSelect ? fontSizeSelect.value : 'medium'; // Default to 'medium'
     localStorage.setItem('font-size', fontSize);
     window.applyFontSize(fontSize); // Apply font size change immediately
+    console.log('Font size setting saved:', fontSize);
 
     window.toggleSettings(); // Close the settings modal
+    console.log('Settings saved and modal closed.');
 };
 
 // ၇။ စာမျက်နှာ စဖွင့်ချိန်မှာ လုပ်ရမည့်အလုပ်များ
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded: Initializing application...');
+
     // Apply saved theme
-    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        console.log('Applied dark mode from localStorage.');
+    } else {
+        console.log('No dark mode preference saved or it is light mode.');
+    }
 
     // Apply saved language
     const savedLang = localStorage.getItem('language') || 'en';
     const langSelect = document.getElementById('langSelect');
-    if(langSelect) langSelect.value = savedLang; // Set select box value
+    if(langSelect) {
+        langSelect.value = savedLang; // Set select box value
+        console.log('Language select box initialized to:', savedLang);
+    } else {
+        console.warn('Language select element (langSelect) not found on DOMContentLoaded.');
+    }
     window.applyLanguage(savedLang); // Apply text translations
+    console.log('Applied language on load:', savedLang);
 
     // Load saved API Key (no need to apply, just populate the input if it exists)
     const savedKey = localStorage.getItem('khittara_api_key');
     const apiKeyInput = document.getElementById('apiKeyInput');
-    if(apiKeyInput && savedKey) apiKeyInput.value = savedKey;
+    if(apiKeyInput && savedKey) {
+        apiKeyInput.value = savedKey;
+        console.log('API Key input initialized with saved key.');
+    } else if (!apiKeyInput) {
+        console.warn('API Key input element (apiKeyInput) not found on DOMContentLoaded.');
+    } else {
+        console.log('No API Key saved.');
+    }
 
     // Apply saved font size
     const savedFontSize = localStorage.getItem('font-size') || 'medium';
     const fontSizeSelect = document.getElementById('fontSizeSelect');
-    if (fontSizeSelect) fontSizeSelect.value = savedFontSize; // Set select box value
+    if (fontSizeSelect) {
+        fontSizeSelect.value = savedFontSize; // Set select box value
+        console.log('Font size select box initialized to:', savedFontSize);
+    } else {
+        console.warn('Font size select element (fontSizeSelect) not found on DOMContentLoaded.');
+    }
     window.applyFontSize(savedFontSize); // Apply font size to the document
+    console.log('Applied font size on load:', savedFontSize);
+
+    console.log('Application initialization complete.');
 });

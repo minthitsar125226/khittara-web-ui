@@ -4,23 +4,13 @@
     --gold: #eab308;
     --sidebar-bg: #ffffff;
     --chat-bg: #ffffff;
-    --base-font-size: 16px; /* Default for Medium */
-    --message-font-size: calc(var(--base-font-size) * 0.95); /* Adjusted from original 0.95rem */
-    --sidebar-item-font-size: calc(var(--base-font-size) * 0.9); /* New explicit size for sidebar items */
+    --main-font-size: 16px; /* Default font size, now named --main-font-size */
+    --message-font-size: calc(var(--main-font-size) * 0.95); /* Adjusted from original 0.95rem */
+    --sidebar-item-font-size: calc(var(--main-font-size) * 0.9); /* New explicit size for sidebar items */
 }
 
-/* Font size adjustments based on user selection */
-body.font-small {
-    --base-font-size: 15px;
-}
-
-body.font-medium {
-    --base-font-size: 16px;
-}
-
-body.font-large {
-    --base-font-size: 17px;
-}
+/* Font size adjustments will now be handled directly by JavaScript setting --main-font-size on :root */
+/* The previous body.font-small/medium/large rules are removed as they are no longer needed */
 
 body.dark-mode {
     --sidebar-bg: #111827;
@@ -33,7 +23,7 @@ body {
     font-family: 'Inter', sans-serif;
     margin: 0;
     -webkit-tap-highlight-color: transparent;
-    font-size: var(--base-font-size); /* Apply base font size to body */
+    font-size: var(--main-font-size); /* Apply main font size to body */
 }
 
 /* Draggable Button */
