@@ -30,7 +30,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
-        # လိပ်စာက အပြင်မှာမို့လို့ ဒီလိုပဲ တိုက်ရိုက်ခေါ်ပါမယ်
+        # ဒီနေရာမှာ လိပ်စာကို အပြင်ကဖိုင်အတိုင်း ပြောင်းထားပါတယ်
         run: python3 ai_processor.py
 
       - name: Commit & Push Changes
