@@ -4,54 +4,57 @@
     --gold: #eab308;
     --sidebar-bg: #ffffff;
     --sidebar-text: #4b5563;
-    --chat-bg: #f9fafb;
+    --chat-bg: #ffffff;
 }
 
+/* Global Transitions */
+body { font-family: 'Inter', sans-serif; margin: 0; transition: background 0.3s, color 0.3s; background: var(--chat-bg); }
+
+/* Dark Mode Logic */
 body.dark-mode {
     --sidebar-bg: #111827;
     --sidebar-text: #9ca3af;
     --chat-bg: #0f172a;
+    background-color: var(--chat-bg);
+    color: #f3f4f6;
 }
 
-body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--chat-bg); color: #111827; transition: 0.3s; }
-body.dark-mode { color: #f3f4f6; }
-
-/* Fixed Professional Sidebar */
+/* Sidebar */
 .floating-sidebar {
     position: fixed; left: 0; top: 0; bottom: 0;
     width: 260px; background: var(--sidebar-bg);
     border-right: 1px solid rgba(0,0,0,0.05);
     display: flex; flex-direction: column; padding: 20px 12px;
-    z-index: 1000; transition: transform 0.3s ease;
+    z-index: 1000;
 }
+body.dark-mode .floating-sidebar { border-right-color: #1f2937; }
 
 .sidebar-item {
     height: 48px; display: flex; align-items: center; 
     border-radius: 12px; color: var(--sidebar-text); cursor: pointer; 
-    transition: 0.2s; margin-bottom: 4px; padding: 0 16px;
-    font-weight: 500;
+    transition: 0.2s; margin-bottom: 4px; padding: 0 16px; font-weight: 500;
 }
-
-.sidebar-item i { font-size: 1.1rem; width: 24px; margin-right: 12px; }
+.sidebar-item i { width: 24px; margin-right: 12px; }
 .sidebar-item:hover, .active-tab { background: #f3f4f6; color: var(--gold); }
-.dark-mode .sidebar-item:hover, .dark-mode .active-tab { background: #1f2937; color: var(--gold); }
+body.dark-mode .sidebar-item:hover, body.dark-mode .active-tab { background: #1f2937; }
 
-/* Main Content Adjustment */
+/* Main Content */
 .view-container { 
-    display: none; height: 100vh; 
-    margin-left: 260px; /* Sidebar width နဲ့ အညီ */
+    display: none; height: 100vh; margin-left: 260px; 
     position: relative; width: calc(100vw - 260px); 
 }
 .view-active { display: flex !important; }
 
-/* Chat Bubbles Fix */
-.message-bubble { 
-    padding: 12px 18px; border-radius: 20px; max-width: 85%; 
-    line-height: 1.6; font-size: 0.95rem; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-}
+/* Chat Bubbles */
+.message-bubble { padding: 14px 20px; border-radius: 22px; max-width: 85%; line-height: 1.6; }
 
 /* Thinking Animation */
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-.dot { display: inline-block; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; margin-right: 3px; animation: bounce 0.6s infinite; }
+.dot { display: inline-block; width: 7px; height: 7px; background: var(--gold); border-radius: 50%; margin-right: 4px; animation: bounce 0.6s infinite; }
 .dot:nth-child(2) { animation-delay: 0.2s; }
 .dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Modal & Input Dark Mode Fix */
+body.dark-mode #settingsModal .bg-white { background-color: #1e293b !important; color: white !important; }
+body.dark-mode .bg-white { background-color: #1e293b !important; color: white !important; border-color: #334155 !important; }
+body.dark-mode input { color: white !important; }
