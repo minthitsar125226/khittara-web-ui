@@ -5,6 +5,7 @@ on:
 
 jobs:
   auto_fix:
+    # Issue Title မှာ AI-FIX ပါမှ အလုပ်လုပ်မည်
     if: contains(github.event.issue.title, 'AI-FIX')
     runs-on: ubuntu-latest
     permissions:
@@ -32,77 +33,94 @@ jobs:
           ISSUE_BODY: ${{ github.event.issue.body }}
         shell: python
         run: |
-          import os
-          import requests
-          import json
-          import re
+          import os, requests, json, re
 
           api_key = os.getenv("GEMINI_API_KEY")
           issue_body = os.getenv("ISSUE_BODY")
 
+          # ၁။ Repo Structure တစ်ခုလုံးကို ဆွဲထုတ်ခြင်း (Tree Structure)
+          repo_files = []
+          for root, dirs, files in os.walk("."):
+              for file in files:
+                  path = os.path.join(root, file).replace("./", "")
+                  # မလိုအပ်သော folder များကို ဖယ်ထုတ်ခြင်း
+                  if not any(x in path for x in ['.git/', 'node_modules/', '__pycache__', '.github/']):
+                      repo_files.append(path)
+          
+          file_tree = "\n".join(repo_files)
+
           def call_gemini(prompt):
-              # သင့် website မှာ အသုံးပြုနေတဲ့ model နာမည်နဲ့ URL format အတိုင်း ပြင်ဆင်ထားပါတယ်
-              model_name = "gemini-2.5-flash"
-              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+              # သင်အသုံးပြုလိုသော Model (gemini-2.5-flash)
+              model = "gemini-2.5-flash"
+              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
               
-              headers = { 'Content-Type': 'application/json' }
-              
-              # Website logic အတိုင်း role: "user" ပါဝင်သော payload
               payload = {
                   "contents": [{ 
                       "role": "user",
-                      "parts": [{ 
-                          "text": f"You are Khittara AI. Provide a helpful response for the following task.\n\nPrompt: {prompt}" 
-                      }] 
+                      "parts": [{ "text": prompt }] 
                   }]
               }
-
-              response = requests.post(url, headers=headers, data=json.dumps(payload))
-              res_json = response.json()
-
-              if response.status_code != 200:
-                  print(f"API Error Response: {json.dumps(res_json, indent=2)}")
-                  raise Exception(f"AI API Error: {response.status_code}")
               
-              if 'candidates' not in res_json or not res_json['candidates']:
-                  print(f"No candidates found. Response: {json.dumps(res_json, indent=2)}")
-                  raise Exception("AI ဆီမှ အဖြေမရရှိပါ။")
+              try:
+                  response = requests.post(url, json=payload)
+                  res_json = response.json()
+                  return res_json['candidates'][0]['content']['parts'][0]['text']
+              except Exception as e:
+                  print(f"Error calling API: {e}")
+                  return ""
 
-              return res_json['candidates'][0]['content']['parts'][0]['text']
+          # ၂။ AI ကို Project Structure ပြပြီး ပြင်ရမယ့်ဖိုင်များကို ရွေးခိုင်းခြင်း
+          identify_prompt = f"""
+          You are a Senior Full-Stack Developer.
+          Here is the project structure:
+          {file_tree}
 
-          # ၁။ ဖိုင်များကို ရှာဖွေခြင်း
-          all_files = []
-          for root, dirs, files in os.walk("."):
-              for file in files:
-                  path = os.path.join(root, file)
-                  # မလိုအပ်သော folder များကို ဖယ်ထုတ်ပါ
-                  if not any(x in path for x in ['.git/', 'node_modules/', '__pycache__/']):
-                      all_files.append(path)
+          User Request: {issue_body}
 
-          # ၂။ ဘယ်ဖိုင်ပြင်ရမလဲ AI ကို မေးခြင်း
-          select_prompt = f"List of files: {all_files}\nUser Request: {issue_body}\nReturn ONLY the exact file path from the list above that needs to be modified."
-          file_to_edit = call_gemini(select_prompt).strip().replace('`', '').replace('./', '', 1)
+          Task: Identify ALL files that need to be modified or created to fulfill this request.
+          Return ONLY the file paths, one per line. No explanation or backticks.
+          """
+          
+          selected_files_text = call_gemini(identify_prompt).strip()
+          files_to_fix = [f.strip() for f in selected_files_text.split('\n') if f.strip()]
+          
+          print(f"AI selected these files to update: {files_to_fix}")
 
-          # ၃။ ဖိုင်ကို ပြင်ဆင်ခြင်း
-          if os.path.exists(file_to_edit):
-              print(f"Processing file: {file_to_edit}")
-              with open(file_to_edit, 'r') as f:
-                  original_content = f.read()
+          # ၃။ ရွေးချယ်ထားသော ဖိုင်များကို တစ်ခုချင်းစီ လိုက်ပြင်ခြင်း
+          for file_path in files_to_fix:
+              file_path = file_path.replace('`', '').replace('./', '')
+              
+              original_content = ""
+              if os.path.exists(file_path):
+                  with open(file_path, 'r') as f:
+                      original_content = f.read()
+              
+              edit_prompt = f"""
+              File Path: {file_path}
+              Current Content:
+              {original_content if original_content else "[New File]"}
 
-              edit_prompt = f"File: {file_to_edit}\nOriginal Code:\n{original_content}\n\nTask: {issue_body}\nReturn ONLY the full updated code. Do not use markdown code blocks."
+              User Request: {issue_body}
+
+              Task: Provide the full updated code for this file only. 
+              Ensure it integrates perfectly with the rest of the project.
+              Return ONLY the raw code. No markdown blocks, no explanations.
+              """
+              
               updated_code = call_gemini(edit_prompt)
               
-              # Markdown ကွင်းစကွင်းပိတ်များ ပါလာပါက ဖယ်ထုတ်ခြင်း
+              # Markdown formatting များပါလာပါက ဖယ်ထုတ်ခြင်း
               clean_code = re.sub(r'^```[a-z]*\n|```$', '', updated_code, flags=re.MULTILINE).strip()
 
-              with open(file_to_edit, 'w') as f:
+              # Folder မရှိပါက ဆောက်ပေးခြင်း
+              os.makedirs(os.path.dirname(file_path) or '.', exist_ok=True)
+              
+              with open(file_path, 'w') as f:
                   f.write(clean_code)
-              print(f"Successfully updated: {file_to_edit}")
-          else:
-              print(f"AI suggested '{file_to_edit}' but file was not found in path.")
+              print(f"Successfully updated: {file_path}")
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "AI: Applied automated updates using gemini-2.5-flash"
+          commit_message: "AI: Automated updates for Issue #${{ github.event.issue.number }}"
           branch: main
