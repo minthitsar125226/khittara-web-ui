@@ -29,19 +29,22 @@
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
+
         /* Thinking Animation */
         .thinking-glow {
             animation: pulse-glow 1.5s infinite ease-in-out;
         }
         @keyframes pulse-glow {
-            0% { color: #10b981; filter: drop-shadow(0 0 2px #10b981); }
-            50% { color: #eab308; filter: drop-shadow(0 0 8px #eab308); }
-            100% { color: #10b981; filter: drop-shadow(0 0 2px #10b981); }
+            0% { color: #10b981; filter: drop-shadow(0 0 2px #10b981); transform: scale(1); }
+            50% { color: #eab308; filter: drop-shadow(0 0 10px #eab308); transform: scale(1.1); }
+            100% { color: #10b981; filter: drop-shadow(0 0 2px #10b981); transform: scale(1); }
         }
 
         /* Markdown Styling */
         .prose { font-size: 0.95rem; line-height: 1.6; }
-        .prose pre { background: #1e1e1e; padding: 1.25rem; border-radius: 1rem; overflow-x: auto; margin: 15px 0; }
+        .prose pre { background: #1e1e1e; padding: 1.25rem; border-radius: 1rem; overflow-x: auto; margin: 15px 0; border: 1px solid #333; }
         .prose code { font-family: monospace; color: #f59e0b; background: #fef9c3; padding: 2px 4px; border-radius: 4px; }
         .prose pre code { background: transparent; padding: 0; color: inherit; }
     </style>
@@ -54,13 +57,12 @@
 
     <section id="homeView" class="h-full flex flex-col items-center justify-center p-6 space-y-12 fade-in">
         <div class="text-center space-y-2">
-            <h1 class="text-5xl font-bold">Khittara <span class="text-gold-500 text-6xl">.</span></h1>
+            <h1 class="text-5xl font-bold tracking-tight">Khittara <span class="text-gold-500 text-6xl">.</span></h1>
             <p class="text-gray-400 font-light">The next generation AI platform.</p>
         </div>
-
         <div class="w-full max-w-2xl relative">
             <div class="relative flex items-center bg-white border border-gray-100 oval-input p-2 shadow-sm focus-within:shadow-lg transition-all">
-                <input type="text" id="initialInput" placeholder="Ask anything..." class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-5 text-lg outline-none">
+                <input type="text" id="initialInput" placeholder="Ask anything to Khittara..." class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-5 text-lg outline-none">
                 <button onclick="startChat()" class="bg-gold-500 hover:bg-gold-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center">
                     <i class="fas fa-arrow-up text-xl"></i>
                 </button>
@@ -70,14 +72,14 @@
 
     <section id="chatView" class="h-full flex flex-col hidden-view bg-white">
         <header class="p-6 border-b border-gray-50 flex justify-between items-center px-12 bg-white/80 sticky top-0 z-10">
-            <h2 class="text-xl font-bold cursor-pointer" onclick="goHome()">Khittara <span class="text-gold-500">.</span></h2>
+            <h2 class="text-xl font-bold text-gray-900 cursor-pointer" onclick="goHome()">Khittara <span class="text-gold-500">.</span></h2>
             <div class="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 <span id="activeModelLabel">Model Ready</span>
                 <div id="statusDot" class="w-2 h-2 bg-green-500 rounded-full"></div>
             </div>
         </header>
 
-        <div id="chatMessages" class="flex-1 overflow-y-auto p-12 space-y-8 max-w-4xl mx-auto w-full pb-32"></div>
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-12 space-y-8 chat-scroll max-w-4xl mx-auto w-full pb-32"></div>
 
         <footer class="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-white via-white">
             <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border border-gray-100 focus-within:bg-white focus-within:shadow-xl transition-all">
@@ -95,7 +97,7 @@
             <div class="space-y-6">
                 <input type="password" id="apiKeyInput" placeholder="API Key" class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none">
                 <input type="text" id="modelInput" placeholder="Model Name" class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none">
-                <button onclick="saveSettings()" class="w-full bg-gold-500 text-white py-4 rounded-2xl font-bold">Save</button>
+                <button onclick="saveSettings()" class="w-full bg-gold-500 text-white py-4 rounded-2xl font-bold">Save Changes</button>
             </div>
         </div>
     </div>
@@ -115,17 +117,23 @@
             toggleSettings();
         }
 
+        function goHome() {
+            document.getElementById('chatView').classList.add('hidden-view');
+            document.getElementById('homeView').classList.remove('hidden-view');
+        }
+
         function startChat() {
-            const val = document.getElementById('initialInput').value;
+            const val = document.getElementById('initialInput').value.trim();
             if (!val) return;
             document.getElementById('homeView').classList.add('hidden-view');
             document.getElementById('chatView').classList.remove('hidden-view');
             appendMessage('user', val);
             processAI(val);
+            document.getElementById('initialInput').value = '';
         }
 
         function sendMessage() {
-            const val = document.getElementById('chatInput').value;
+            const val = document.getElementById('chatInput').value.trim();
             if (!val) return;
             appendMessage('user', val);
             processAI(val);
@@ -134,19 +142,19 @@
 
         function appendMessage(role, text) {
             const msgDiv = document.createElement('div');
-            msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} fade-in`;
+            msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} fade-in mb-4`;
             const htmlContent = role === 'ai' ? marked.parse(text) : text;
-            
-            msgDiv.innerHTML = `<div class="${role === 'user' ? 'bg-gold-500 text-white' : 'bg-gray-50 text-gray-800 prose'} p-5 rounded-3xl max-w-[85%] shadow-sm border border-gray-50">${htmlContent}</div>`;
+            msgDiv.innerHTML = `<div class="${role === 'user' ? 'bg-gold-500 text-white' : 'bg-gray-50 text-gray-800 prose'} p-5 rounded-3xl max-w-[85%] shadow-sm border border-gray-100">${htmlContent}</div>`;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // --- Thinking Indicator UI ---
+        // --- Thinking Indicator Logic ---
         function showThinking() {
+            if(document.getElementById('thinkingIndicator')) return; // ရှိပြီးသားဆို ထပ်မပြဘူး
             const thinkingDiv = document.createElement('div');
             thinkingDiv.id = 'thinkingIndicator';
-            thinkingDiv.className = 'flex justify-start fade-in';
+            thinkingDiv.className = 'flex justify-start fade-in mb-4';
             thinkingDiv.innerHTML = `
                 <div class="bg-gray-50 p-4 rounded-3xl flex items-center space-x-3 border border-gray-100 shadow-sm">
                     <i class="fas fa-microchip thinking-glow text-lg"></i>
@@ -162,10 +170,10 @@
         }
 
         async function processAI(prompt) {
-            showThinking(); // Icon ပြမယ်
+            showThinking(); // API မခေါ်ခင် animation အရင်ပြမယ်
             try {
                 const aiResponse = await AI_CONFIG.fetchAIResponse(prompt);
-                hideThinking(); // Icon ဖျောက်မယ်
+                hideThinking(); // အဖြေရတာနဲ့ animation ဖြုတ်မယ်
                 appendMessage('ai', aiResponse);
             } catch (error) {
                 hideThinking();
