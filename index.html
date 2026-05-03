@@ -32,13 +32,16 @@
         .chat-scroll::-webkit-scrollbar { width: 4px; }
         .chat-scroll::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
 
-        /* Markdown Styling */
+        /* Enhanced Markdown Styling */
+        .prose { font-size: 0.95rem; line-height: 1.6; }
         .prose pre { background: #1e1e1e; padding: 1.25rem; border-radius: 1rem; overflow-x: auto; margin: 15px 0; border: 1px solid #333; }
-        .prose code { font-family: 'Fira Code', monospace; font-size: 0.9em; color: #f59e0b; }
+        .prose code { font-family: 'Fira Code', monospace; font-size: 0.85em; color: #f59e0b; background: #fef9c3; padding: 2px 4px; border-radius: 4px; }
+        .prose pre code { background: transparent; padding: 0; color: inherit; }
         .prose ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
         .prose ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
-        .prose h1, .prose h2, .prose h3 { font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .prose p { margin-bottom: 0.75rem; }
+        .prose h1, .prose h2, .prose h3 { font-weight: 700; color: #111; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .prose p { margin-bottom: 1rem; }
+        .prose strong { color: #000; font-weight: 600; }
     </style>
 </head>
 <body class="h-screen relative text-gray-800">
@@ -80,7 +83,7 @@
         <div id="chatMessages" class="flex-1 overflow-y-auto p-12 space-y-8 chat-scroll max-w-4xl mx-auto w-full pb-32"></div>
 
         <footer class="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-white via-white to-transparent">
-            <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border border-gray-100 focus-within:bg-white focus-within:border-gold-300 focus-within:shadow-xl transition-all">
+            <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border border-gray-100 focus-within:bg-white focus-within:border-gold-300 focus-within:shadow-xl transition-all shadow-sm">
                 <input type="text" id="chatInput" placeholder="Send a message..." 
                        class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-3 outline-none">
                 <button onclick="sendMessage()" class="bg-gold-500 hover:bg-gold-600 text-white w-10 h-10 rounded-full shadow-md">
@@ -171,7 +174,6 @@
             const msgDiv = document.createElement('div');
             msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} fade-in`;
             
-            // Markdown Parsing
             const htmlContent = role === 'ai' ? marked.parse(text) : text;
 
             msgDiv.innerHTML = role === 'user' 
@@ -180,7 +182,6 @@
             
             chatMessages.appendChild(msgDiv);
             
-            // Apply Highlight.js to code blocks
             msgDiv.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
