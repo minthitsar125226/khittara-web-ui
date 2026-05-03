@@ -1,0 +1,42 @@
+name: AI Auto-Coder
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  auto_fix:
+    # Issue title မှာ 'AI-FIX' လို့ ပါမှသာ ဒီ Action အလုပ်လုပ်မှာဖြစ်ပါတယ်
+    if: contains(github.event.issue.title, 'AI-FIX')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Code ကို ပြန်ရေးရန် (Push လုပ်ရန်)
+      issues: write     # Issue မှာ comment ပြန်ရေးရန် (လိုအပ်ပါက)
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run AI Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        # scripts folder ထဲက python file ကို လှမ်း run တာဖြစ်ပါတယ်
+        run: python .github/scripts/ai_processor.py
+
+      - name: Commit & Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "AI: Automated code update from Issue #${{ github.event.issue.number }}"
+          branch: main # သင့်ရဲ့ default branch နာမည်ကို သေချာစစ်ပါ (main သို့မဟုတ် master)
