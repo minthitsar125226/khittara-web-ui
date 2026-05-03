@@ -31,14 +31,16 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          echo "Checking file location..."
-          FILE_PATH=$(find . -name "ai_processor.py" | head -n 1)
-          if [ -z "$FILE_PATH" ]; then
-            echo "Error: ai_processor.py not found anywhere!"
+          # Folder နှစ်ထပ်ဖြစ်နေတဲ့ ပြဿနာကို ဖြေရှင်းရန် ဖိုင်ကို လိုက်ရှာပါသည်
+          REAL_PATH=$(find . -name "ai_processor.py" | head -n 1)
+          
+          if [ -z "$REAL_PATH" ]; then
+            echo "Error: ai_processor.py not found!"
             exit 1
           fi
-          echo "Found file at: $FILE_PATH"
-          python3 "$FILE_PATH"
+          
+          echo "Executing AI Agent at: $REAL_PATH"
+          python3 "$REAL_PATH"
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
