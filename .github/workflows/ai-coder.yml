@@ -26,15 +26,60 @@ jobs:
       - name: Install Dependencies
         run: pip install requests
 
-      - name: Run AI Agent
+      - name: Run AI Agent Logic
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
-        # ဒီနေရာမှာ လိပ်စာကို အပြင်ကဖိုင်အတိုင်း ပြောင်းထားပါတယ်
-        run: python3 ai_processor.py
+        shell: python
+        run: |
+          import os
+          import requests
+          import json
+          import re
+
+          api_key = os.getenv("GEMINI_API_KEY")
+          issue_body = os.getenv("ISSUE_BODY")
+
+          def call_gemini(prompt):
+              url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+              headers = {'Content-Type': 'application/json'}
+              data = {"contents": [{"parts": [{"text": prompt}]}]}
+              response = requests.post(url, headers=headers, data=json.dumps(data))
+              if response.status_code != 200:
+                  raise Exception(f"API Error: {response.text}")
+              return response.json()['candidates'][0]['content']['parts'][0]['text']
+
+          # ၁။ ပြင်ရမယ့်ဖိုင်ကို ရှာဖွေခြင်း
+          all_files = []
+          for root, dirs, files in os.walk("."):
+              for file in files:
+                  if not any(x in root for x in ['.git', 'node_modules', '__pycache__']):
+                      all_files.append(os.path.join(root, file))
+
+          print(f"Available files: {all_files}")
+
+          # ၂။ ဘယ်ဖိုင်ပြင်ရမလဲ AI ကို မေးခြင်း
+          select_prompt = f"Files: {all_files}\nRequest: {issue_body}\nReturn ONLY the exact file path to edit."
+          file_to_edit = call_gemini(select_prompt).strip().replace('`', '').lstrip('./')
+
+          if os.path.exists(file_to_edit):
+              print(f"Editing file: {file_to_edit}")
+              with open(file_to_edit, 'r') as f:
+                  original_content = f.read()
+
+              # ၃။ Code ပြင်ဆင်ခြင်း
+              edit_prompt = f"File: {file_to_edit}\nCode:\n{original_content}\n\nRequest: {issue_body}\nReturn ONLY the updated code."
+              updated_code = call_gemini(edit_prompt)
+              clean_code = re.sub(r'^```[a-z]*\n|```$', '', updated_code, flags=re.MULTILINE).strip()
+
+              with open(file_to_edit, 'w') as f:
+                  f.write(clean_code)
+              print("File updated successfully.")
+          else:
+              print(f"Error: AI selected {file_to_edit} but it doesn't exist.")
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "AI: Automated update based on Issue #${{ github.event.issue.number }}"
+          commit_message: "AI: Automated update based on Issue"
           branch: main
