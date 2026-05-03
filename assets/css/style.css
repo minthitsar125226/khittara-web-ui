@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+body { font-family: 'Poppins', sans-serif; background-color: #fcfcfc; height: 100vh; margin: 0; overflow: hidden; }
+
+.view-container { display: none; height: 100vh; width: 100vw; position: relative; }
+.view-active { display: flex !important; }
+
+/* Floating Glass Sidebar */
+.floating-sidebar {
+    position: fixed; left: 20px; top: 50%; transform: translateY(-50%);
+    width: 70px; height: auto; max-height: 80vh;
+    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(15px);
+    border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 40px;
+    display: flex; flex-direction: column; padding: 20px 10px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000;
+}
+.floating-sidebar:hover { width: 240px; padding: 20px; border-radius: 30px; border-color: rgba(234, 179, 8, 0.5); }
+
+.sidebar-icon {
+    width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+    border-radius: 20px; color: #666; transition: all 0.3s; position: relative;
+    cursor: pointer; overflow: hidden; margin-bottom: 10px;
+}
+.floating-sidebar:hover .sidebar-icon { width: 100%; justify-content: start; padding-left: 15px; }
+.sidebar-label { opacity: 0; white-space: nowrap; margin-left: 15px; font-size: 0.85rem; font-weight: 500; transition: 0.3s; position: absolute; left: 50px; }
+.floating-sidebar:hover .sidebar-label { opacity: 1; }
+.sidebar-icon:hover { background: #eab308; color: white; transform: scale(1.05); box-shadow: 0 5px 15px rgba(234, 179, 8, 0.3); }
+
+.active-tab { background: rgba(234, 179, 8, 0.1); color: #ca8a04; border: 1px solid rgba(234, 179, 8, 0.1); }
+.oval-input { border-radius: 9999px; }
+.chat-scroll::-webkit-scrollbar { width: 3px; }
+.chat-scroll::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
+
+@keyframes pulse-glow {
+    0%, 100% { color: #10b981; filter: drop-shadow(0 0 2px #10b981); }
+    50% { color: #eab308; filter: drop-shadow(0 0 8px #eab308); }
+}
+.thinking-glow { animation: pulse-glow 1.5s infinite; }
