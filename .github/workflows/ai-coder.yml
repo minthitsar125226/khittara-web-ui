@@ -41,19 +41,18 @@ jobs:
           issue_body = os.getenv("ISSUE_BODY")
 
           def call_gemini(prompt):
-              # သင်ပေးထားတဲ့ Website code ထဲက URL format အတိုင်း ပြင်ထားပါတယ်
-              # Default အနေနဲ့ gemini-1.5-flash ကို သုံးပေးထားပါတယ်
-              model = "gemini-1.5-flash" 
-              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+              # သင့် website မှာ အသုံးပြုနေတဲ့ model နာမည်နဲ့ URL format အတိုင်း ပြင်ဆင်ထားပါတယ်
+              model_name = "gemini-2.5-flash"
+              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
               
-              headers = {'Content-Type': 'application/json'}
+              headers = { 'Content-Type': 'application/json' }
               
-              # Website ထဲက body format (role: "user") အတိုင်း ပြင်ဆင်ထားပါတယ်
+              # Website logic အတိုင်း role: "user" ပါဝင်သော payload
               payload = {
                   "contents": [{ 
                       "role": "user",
                       "parts": [{ 
-                          "text": prompt 
+                          "text": f"You are Khittara AI. Provide a helpful response for the following task.\n\nPrompt: {prompt}" 
                       }] 
                   }]
               }
@@ -62,9 +61,13 @@ jobs:
               res_json = response.json()
 
               if response.status_code != 200:
-                  print(f"API Error Response: {res_json}")
+                  print(f"API Error Response: {json.dumps(res_json, indent=2)}")
                   raise Exception(f"AI API Error: {response.status_code}")
               
+              if 'candidates' not in res_json or not res_json['candidates']:
+                  print(f"No candidates found. Response: {json.dumps(res_json, indent=2)}")
+                  raise Exception("AI ဆီမှ အဖြေမရရှိပါ။")
+
               return res_json['candidates'][0]['content']['parts'][0]['text']
 
           # ၁။ ဖိုင်များကို ရှာဖွေခြင်း
@@ -72,33 +75,34 @@ jobs:
           for root, dirs, files in os.walk("."):
               for file in files:
                   path = os.path.join(root, file)
+                  # မလိုအပ်သော folder များကို ဖယ်ထုတ်ပါ
                   if not any(x in path for x in ['.git/', 'node_modules/', '__pycache__/']):
                       all_files.append(path)
 
           # ၂။ ဘယ်ဖိုင်ပြင်ရမလဲ AI ကို မေးခြင်း
-          select_prompt = f"Available files: {all_files}\nRequest: {issue_body}\nReturn ONLY the exact file path from the list."
+          select_prompt = f"List of files: {all_files}\nUser Request: {issue_body}\nReturn ONLY the exact file path from the list above that needs to be modified."
           file_to_edit = call_gemini(select_prompt).strip().replace('`', '').replace('./', '', 1)
 
           # ၃။ ဖိုင်ကို ပြင်ဆင်ခြင်း
           if os.path.exists(file_to_edit):
-              print(f"Opening file: {file_to_edit}")
+              print(f"Processing file: {file_to_edit}")
               with open(file_to_edit, 'r') as f:
                   original_content = f.read()
 
-              edit_prompt = f"File Content:\n{original_content}\n\nTask: {issue_body}\nReturn the full updated code only. No markdown blocks."
+              edit_prompt = f"File: {file_to_edit}\nOriginal Code:\n{original_content}\n\nTask: {issue_body}\nReturn ONLY the full updated code. Do not use markdown code blocks."
               updated_code = call_gemini(edit_prompt)
               
-              # Clean markdown if present
+              # Markdown ကွင်းစကွင်းပိတ်များ ပါလာပါက ဖယ်ထုတ်ခြင်း
               clean_code = re.sub(r'^```[a-z]*\n|```$', '', updated_code, flags=re.MULTILINE).strip()
 
               with open(file_to_edit, 'w') as f:
                   f.write(clean_code)
               print(f"Successfully updated: {file_to_edit}")
           else:
-              print(f"AI suggested {file_to_edit} but it was not found.")
+              print(f"AI suggested '{file_to_edit}' but file was not found in path.")
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "AI: Applied code changes via GitHub Issue"
+          commit_message: "AI: Applied automated updates using gemini-2.5-flash"
           branch: main
