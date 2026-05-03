@@ -10,7 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
     <script src="ai-config.js"></script>
 
     <script>
@@ -29,19 +28,22 @@
         .hidden-view { display: none !important; }
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .chat-scroll::-webkit-scrollbar { width: 4px; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
+        
+        /* Thinking Animation */
+        .thinking-glow {
+            animation: pulse-glow 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse-glow {
+            0% { color: #10b981; filter: drop-shadow(0 0 2px #10b981); }
+            50% { color: #eab308; filter: drop-shadow(0 0 8px #eab308); }
+            100% { color: #10b981; filter: drop-shadow(0 0 2px #10b981); }
+        }
 
-        /* Enhanced Markdown Styling */
+        /* Markdown Styling */
         .prose { font-size: 0.95rem; line-height: 1.6; }
-        .prose pre { background: #1e1e1e; padding: 1.25rem; border-radius: 1rem; overflow-x: auto; margin: 15px 0; border: 1px solid #333; }
-        .prose code { font-family: 'Fira Code', monospace; font-size: 0.85em; color: #f59e0b; background: #fef9c3; padding: 2px 4px; border-radius: 4px; }
+        .prose pre { background: #1e1e1e; padding: 1.25rem; border-radius: 1rem; overflow-x: auto; margin: 15px 0; }
+        .prose code { font-family: monospace; color: #f59e0b; background: #fef9c3; padding: 2px 4px; border-radius: 4px; }
         .prose pre code { background: transparent; padding: 0; color: inherit; }
-        .prose ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
-        .prose ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
-        .prose h1, .prose h2, .prose h3 { font-weight: 700; color: #111; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-        .prose p { margin-bottom: 1rem; }
-        .prose strong { color: #000; font-weight: 600; }
     </style>
 </head>
 <body class="h-screen relative text-gray-800">
@@ -52,16 +54,14 @@
 
     <section id="homeView" class="h-full flex flex-col items-center justify-center p-6 space-y-12 fade-in">
         <div class="text-center space-y-2">
-            <h1 class="text-5xl font-bold tracking-tight">Khittara <span class="text-gold-500 text-6xl">.</span></h1>
+            <h1 class="text-5xl font-bold">Khittara <span class="text-gold-500 text-6xl">.</span></h1>
             <p class="text-gray-400 font-light">The next generation AI platform.</p>
         </div>
 
-        <div class="w-full max-w-2xl relative group">
-            <div class="absolute -inset-1 bg-gradient-to-r from-gold-100 to-gold-50 rounded-[50px] blur opacity-20 group-focus-within:opacity-100 transition duration-1000"></div>
+        <div class="w-full max-w-2xl relative">
             <div class="relative flex items-center bg-white border border-gray-100 oval-input p-2 shadow-sm focus-within:shadow-lg transition-all">
-                <input type="text" id="initialInput" placeholder="Ask anything to Khittara..." 
-                       class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-5 text-lg outline-none">
-                <button onclick="startChat()" class="bg-gold-500 hover:bg-gold-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-90">
+                <input type="text" id="initialInput" placeholder="Ask anything..." class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-5 text-lg outline-none">
+                <button onclick="startChat()" class="bg-gold-500 hover:bg-gold-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center">
                     <i class="fas fa-arrow-up text-xl"></i>
                 </button>
             </div>
@@ -69,23 +69,19 @@
     </section>
 
     <section id="chatView" class="h-full flex flex-col hidden-view bg-white">
-        <header class="p-6 border-b border-gray-50 flex justify-between items-center px-12 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-            <h2 class="text-xl font-bold text-gray-900 cursor-pointer flex items-center group" onclick="goHome()">
-                <i class="fas fa-chevron-left mr-3 text-sm text-gray-300 group-hover:text-gold-500 transition-all"></i>
-                Khittara <span class="text-gold-500 ml-1">.</span>
-            </h2>
+        <header class="p-6 border-b border-gray-50 flex justify-between items-center px-12 bg-white/80 sticky top-0 z-10">
+            <h2 class="text-xl font-bold cursor-pointer" onclick="goHome()">Khittara <span class="text-gold-500">.</span></h2>
             <div class="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 <span id="activeModelLabel">Model Ready</span>
                 <div id="statusDot" class="w-2 h-2 bg-green-500 rounded-full"></div>
             </div>
         </header>
 
-        <div id="chatMessages" class="flex-1 overflow-y-auto p-12 space-y-8 chat-scroll max-w-4xl mx-auto w-full pb-32"></div>
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-12 space-y-8 max-w-4xl mx-auto w-full pb-32"></div>
 
-        <footer class="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-white via-white to-transparent">
-            <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border border-gray-100 focus-within:bg-white focus-within:border-gold-300 focus-within:shadow-xl transition-all shadow-sm">
-                <input type="text" id="chatInput" placeholder="Send a message..." 
-                       class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-3 outline-none">
+        <footer class="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-white via-white">
+            <div class="max-w-4xl mx-auto flex items-center bg-gray-50 oval-input p-2 border border-gray-100 focus-within:bg-white focus-within:shadow-xl transition-all">
+                <input type="text" id="chatInput" placeholder="Send a message..." class="flex-1 bg-transparent border-none focus:ring-0 px-8 py-3 outline-none">
                 <button onclick="sendMessage()" class="bg-gold-500 hover:bg-gold-600 text-white w-10 h-10 rounded-full shadow-md">
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -94,112 +90,86 @@
     </section>
 
     <div id="settingsModal" class="fixed inset-0 bg-black/10 backdrop-blur-md flex items-center justify-center hidden-view z-50">
-        <div class="bg-white border border-gray-100 w-full max-w-md p-10 rounded-[40px] shadow-2xl">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-bold">Settings</h2>
-                <button onclick="toggleSettings()" class="text-gray-400"><i class="fas fa-times"></i></button>
-            </div>
+        <div class="bg-white w-full max-w-md p-10 rounded-[40px] shadow-2xl">
+            <h2 class="text-2xl font-bold mb-8">Settings</h2>
             <div class="space-y-6">
-                <div>
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Gemini API Key</label>
-                    <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none border border-transparent focus:border-gold-300">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Preferred Model</label>
-                    <input type="text" id="modelInput" placeholder="gemini-2.5-flash" class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none border border-transparent focus:border-gold-300">
-                </div>
-                <button onclick="saveSettings()" class="w-full bg-gold-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-gold-100 active:scale-95 transition-all">Save Changes</button>
+                <input type="password" id="apiKeyInput" placeholder="API Key" class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none">
+                <input type="text" id="modelInput" placeholder="Model Name" class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none">
+                <button onclick="saveSettings()" class="w-full bg-gold-500 text-white py-4 rounded-2xl font-bold">Save</button>
             </div>
         </div>
     </div>
 
     <script>
-        const homeView = document.getElementById('homeView');
-        const chatView = document.getElementById('chatView');
-        const initialInput = document.getElementById('initialInput');
-        const chatInput = document.getElementById('chatInput');
         const chatMessages = document.getElementById('chatMessages');
 
         window.onload = () => {
             document.getElementById('apiKeyInput').value = localStorage.getItem('khittara_api_key') || '';
             document.getElementById('modelInput').value = localStorage.getItem('khittara_model') || 'gemini-2.5-flash';
-            updateModelLabel();
         };
 
-        function updateModelLabel() {
-            const m = localStorage.getItem('khittara_model') || 'gemini-2.5-flash';
-            document.getElementById('activeModelLabel').innerText = m;
-        }
-
-        function toggleSettings() {
-            document.getElementById('settingsModal').classList.toggle('hidden-view');
-        }
-
+        function toggleSettings() { document.getElementById('settingsModal').classList.toggle('hidden-view'); }
         function saveSettings() {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            const model = document.getElementById('modelInput').value.trim();
-            if(key) localStorage.setItem('khittara_api_key', key);
-            if(model) localStorage.setItem('khittara_model', model);
-            updateModelLabel();
+            localStorage.setItem('khittara_api_key', document.getElementById('apiKeyInput').value);
+            localStorage.setItem('khittara_model', document.getElementById('modelInput').value);
             toggleSettings();
         }
 
-        function goHome() {
-            chatView.classList.add('hidden-view');
-            homeView.classList.remove('hidden-view');
-        }
-
-        initialInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') startChat(); });
-        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-
         function startChat() {
-            const val = initialInput.value.trim();
+            const val = document.getElementById('initialInput').value;
             if (!val) return;
-            homeView.classList.add('hidden-view');
-            chatView.classList.remove('hidden-view');
+            document.getElementById('homeView').classList.add('hidden-view');
+            document.getElementById('chatView').classList.remove('hidden-view');
             appendMessage('user', val);
             processAI(val);
-            initialInput.value = '';
         }
 
         function sendMessage() {
-            const val = chatInput.value.trim();
+            const val = document.getElementById('chatInput').value;
             if (!val) return;
             appendMessage('user', val);
             processAI(val);
-            chatInput.value = '';
+            document.getElementById('chatInput').value = '';
         }
 
         function appendMessage(role, text) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} fade-in`;
-            
             const htmlContent = role === 'ai' ? marked.parse(text) : text;
-
-            msgDiv.innerHTML = role === 'user' 
-                ? `<div class="bg-gold-500 text-white p-5 rounded-3xl rounded-tr-none max-w-[85%] shadow-sm">${htmlContent}</div>`
-                : `<div class="bg-gray-50 text-gray-800 p-5 rounded-3xl rounded-tl-none max-w-[85%] border border-gray-100 shadow-sm leading-relaxed prose">${htmlContent}</div>`;
             
+            msgDiv.innerHTML = `<div class="${role === 'user' ? 'bg-gold-500 text-white' : 'bg-gray-50 text-gray-800 prose'} p-5 rounded-3xl max-w-[85%] shadow-sm border border-gray-50">${htmlContent}</div>`;
             chatMessages.appendChild(msgDiv);
-            
-            msgDiv.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
-            });
-
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        async function processAI(prompt) {
-            const statusDot = document.getElementById('statusDot');
-            statusDot.className = 'w-2 h-2 bg-yellow-500 rounded-full animate-pulse';
+        // --- Thinking Indicator UI ---
+        function showThinking() {
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.id = 'thinkingIndicator';
+            thinkingDiv.className = 'flex justify-start fade-in';
+            thinkingDiv.innerHTML = `
+                <div class="bg-gray-50 p-4 rounded-3xl flex items-center space-x-3 border border-gray-100 shadow-sm">
+                    <i class="fas fa-microchip thinking-glow text-lg"></i>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Khittara is thinking...</span>
+                </div>`;
+            chatMessages.appendChild(thinkingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
+        function hideThinking() {
+            const indicator = document.getElementById('thinkingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        async function processAI(prompt) {
+            showThinking(); // Icon ပြမယ်
             try {
                 const aiResponse = await AI_CONFIG.fetchAIResponse(prompt);
+                hideThinking(); // Icon ဖျောက်မယ်
                 appendMessage('ai', aiResponse);
             } catch (error) {
+                hideThinking();
                 appendMessage('ai', `Error: ${error.message}`);
-            } finally {
-                statusDot.className = 'w-2 h-2 bg-green-500 rounded-full';
             }
         }
     </script>
