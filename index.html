@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khittara AI - Full Professional Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Khittara AI Hub</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,13 +13,13 @@
     
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="bg-white transition-colors duration-300">
+<body class="bg-white transition-colors duration-300 overflow-hidden">
 
     <button id="menuToggleBtn">
         <i class="fas fa-bars"></i>
     </button>
 
-    <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div id="sidebarOverlay" onclick="window.toggleSidebar()"></div>
 
     <nav class="floating-sidebar" id="mainSidebar">
         <div class="flex justify-between items-center px-4 mb-8">
@@ -27,86 +27,94 @@
                 <div class="w-8 h-8 bg-yellow-500 rounded-lg mr-3 flex items-center justify-center text-white font-bold">K</div>
                 <span class="text-xl font-bold tracking-tight">Khittara <span class="text-yellow-500">.</span></span>
             </div>
-            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            <button onclick="window.toggleSidebar()" class="text-gray-400 hover:text-red-500 p-2">
+                <i class="fas fa-times text-xl"></i>
+            </button>
         </div>
         
-        <div class="sidebar-item active-tab" onclick="switchView('home')">
-            <i class="fas fa-home"></i><span class="sidebar-label">Dashboard</span>
+        <div class="sidebar-item active-tab" onclick="window.switchView('home')">
+            <i class="fas fa-home w-6"></i><span class="sidebar-label">Dashboard</span>
         </div>
         <div class="sidebar-item" onclick="newChat()">
-            <i class="fas fa-comment-alt"></i><span class="sidebar-label">AI Chat</span>
+            <i class="fas fa-comment-alt w-6"></i><span class="sidebar-label">AI Chat</span>
         </div>
         <div class="sidebar-item">
-            <i class="fas fa-chart-line"></i><span class="sidebar-label">Lottery Analysis</span>
+            <i class="fas fa-chart-line w-6"></i><span class="sidebar-label">Lottery Analysis</span>
         </div>
         
         <div class="mt-8 mb-2 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest" id="historyTitle">History</div>
         <div id="chatHistoryList" class="flex-1 overflow-y-auto px-1 chat-scroll"></div>
 
         <div class="mt-auto border-t border-gray-100 pt-4 dark:border-zinc-800">
-            <div class="sidebar-item" onclick="toggleSettings()">
-                <i class="fas fa-cog"></i><span class="sidebar-label">Settings</span>
+            <div class="sidebar-item" onclick="window.toggleSettings()">
+                <i class="fas fa-cog w-6"></i><span class="sidebar-label">Settings</span>
             </div>
         </div>
     </nav>
 
-    <main>
-        <section id="homeView" class="view-container view-active flex flex-col items-center justify-center">
-            <div class="max-w-2xl w-full text-center px-6">
-                <h1 class="text-6xl font-extrabold mb-4">Khittara <span class="text-yellow-500">.</span></h1>
+    <main class="h-screen w-screen overflow-hidden relative">
+        
+        <section id="homeView" class="view-container view-active flex flex-col items-center justify-center p-6 text-center">
+            <div class="max-w-2xl w-full">
+                <h1 class="text-5xl md:text-7xl font-extrabold mb-4">Khittara <span class="text-yellow-500">.</span></h1>
                 <p class="text-gray-500 mb-10 text-lg">Empowering your vision with AI.</p>
-                <div class="bg-white dark:bg-zinc-900 shadow-2xl rounded-[30px] flex p-2 border border-gray-100 dark:border-zinc-800 focus-within:ring-2 focus-within:ring-yellow-500/20 transition-all">
-                    <input type="text" id="initialInput" class="flex-1 bg-transparent px-6 py-4 outline-none text-lg" placeholder="Message Khittara...">
-                    <button onclick="sendMessage('initialInput')" class="bg-yellow-500 text-white w-14 h-14 rounded-2xl shadow-lg hover:bg-yellow-600 transition"><i class="fas fa-paper-plane"></i></button>
+                <div class="bg-white dark:bg-zinc-900 shadow-2xl rounded-[30px] flex p-2 border border-gray-100 dark:border-zinc-800 max-w-lg mx-auto">
+                    <input type="text" id="initialInput" class="flex-1 bg-transparent px-4 py-3 outline-none" placeholder="Message Khittara...">
+                    <button onclick="sendMessage('initialInput')" class="bg-yellow-500 text-white w-12 h-12 rounded-2xl shadow-lg flex items-center justify-center">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
             </div>
         </section>
 
         <section id="chatView" class="view-container flex-col">
-            <div class="px-8 py-4 border-b dark:border-zinc-800 flex items-center justify-between bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md">
+            <div class="px-6 py-4 border-b dark:border-zinc-800 flex items-center justify-between bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md">
                 <div class="flex items-center">
                     <div class="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></div>
-                    <span class="font-bold text-gray-700 dark:text-gray-200">Khittara AI Engine</span>
+                    <span class="font-bold text-sm md:text-base">Khittara AI Engine</span>
                 </div>
-                <button onclick="newChat()" class="text-xs bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-lg hover:bg-yellow-500 hover:text-white transition">
-                    <i class="fas fa-plus mr-1"></i> New Chat
+                <button onclick="newChat()" class="text-[10px] bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider">
+                    New Chat
                 </button>
             </div>
 
-            <div id="chatMessages" class="flex-1 overflow-y-auto p-6 md:p-10 max-w-5xl mx-auto w-full chat-scroll"></div>
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 md:p-10 chat-scroll"></div>
             
-            <div class="p-6 md:p-8">
-                <div class="max-w-4xl mx-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-[25px] flex p-2 shadow-xl focus-within:border-yellow-500 transition-all">
-                    <input type="text" id="chatInput" class="flex-1 bg-transparent px-6 py-3 outline-none" placeholder="Type your message...">
-                    <button onclick="sendMessage('chatInput')" class="bg-yellow-500 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg"><i class="fas fa-arrow-up"></i></button>
+            <div class="p-4 md:p-8">
+                <div class="max-w-4xl mx-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-[25px] flex p-1.5 shadow-xl">
+                    <input type="text" id="chatInput" class="flex-1 bg-transparent px-4 py-2 outline-none text-sm md:text-base" placeholder="Type message...">
+                    <button onclick="sendMessage('chatInput')" class="bg-yellow-500 text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
                 </div>
             </div>
         </section>
+
     </main>
 
     <div id="settingsModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[10001]">
-        <div class="bg-white dark:bg-zinc-900 w-full max-w-md p-8 rounded-[35px] shadow-2xl mx-4 transition-all">
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-md p-6 md:p-8 rounded-[35px] shadow-2xl mx-4">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="modalTitle" class="text-2xl font-bold">Settings</h2>
-                <button onclick="toggleSettings()"><i class="fas fa-times text-gray-400"></i></button>
+                <button onclick="window.toggleSettings()"><i class="fas fa-times text-gray-400 p-2"></i></button>
             </div>
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-bold text-gray-400 uppercase mb-2 block tracking-widest">Gemini API Key</label>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Gemini API Key</label>
                     <input type="password" id="apiKeyInput" class="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl outline-none border border-transparent focus:border-yellow-500">
                 </div>
                 <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
                     <span id="darkModeLabel" class="font-medium">Dark Mode</span>
-                    <button onclick="toggleTheme()" id="themeToggleIcon" class="text-3xl text-yellow-500"><i class="fas fa-toggle-on"></i></button>
+                    <button onclick="window.toggleTheme()" class="text-3xl text-yellow-500"><i class="fas fa-toggle-on"></i></button>
                 </div>
                 <div>
-                    <label id="langLabel" class="text-xs font-bold text-gray-400 uppercase mb-2 block tracking-widest">Language</label>
-                    <select id="langSelect" class="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl outline-none cursor-pointer">
+                    <label id="langLabel" class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Language</label>
+                    <select id="langSelect" class="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl outline-none">
                         <option value="en">English (US)</option>
                         <option value="my">မြန်မာဘာသာ</option>
                     </select>
                 </div>
-                <button id="saveBtn" onclick="saveSettings()" class="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-yellow-600 transition transform active:scale-95">Save Changes</button>
+                <button id="saveBtn" onclick="window.saveSettings()" class="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold">Save Changes</button>
             </div>
         </div>
     </div>
