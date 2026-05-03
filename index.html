@@ -13,7 +13,7 @@
     
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="bg-white transition-colors duration-300 overflow-hidden">
+<body class="bg-white transition-colors duration-300 overflow-hidden text-base">
 
     <button id="menuToggleBtn">
         <i class="fas fa-bars"></i>
@@ -105,7 +105,7 @@
                 </div>
                 <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
                     <span id="darkModeLabel" class="font-medium">Dark Mode</span>
-                    <button onclick="window.toggleTheme()" class="text-3xl text-yellow-500"><i class="fas fa-toggle-on"></i></button>
+                    <button onclick="window.toggleTheme()" class="text-3xl text-yellow-500"><i id="darkModeToggleIcon" class="fas fa-toggle-on"></i></button>
                 </div>
                 <div>
                     <label id="langLabel" class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Language</label>
@@ -131,5 +131,141 @@
     <script src="ai-config.js"></script>
     <script src="assets/js/navigation.js"></script>
     <script src="assets/js/chat.js"></script>
+    <script>
+        // Global functions for settings and theme
+        window.toggleSettings = () => {
+            const settingsModal = document.getElementById('settingsModal');
+            settingsModal.classList.toggle('hidden');
+            settingsModal.classList.toggle('flex');
+            if (settingsModal.classList.contains('flex')) {
+                loadSettings(); // Load settings when modal opens
+            }
+        };
+
+        window.toggleTheme = () => {
+            document.documentElement.classList.toggle('dark');
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            updateDarkModeToggleIcon(isDarkMode);
+        };
+
+        const updateDarkModeToggleIcon = (isDarkMode) => {
+            const icon = document.getElementById('darkModeToggleIcon');
+            if (icon) {
+                if (isDarkMode) {
+                    icon.classList.remove('fa-toggle-off');
+                    icon.classList.add('fa-toggle-on');
+                } else {
+                    icon.classList.remove('fa-toggle-on');
+                    icon.classList.add('fa-toggle-off');
+                }
+            }
+        };
+
+        const applyTheme = () => {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateDarkModeToggleIcon(savedTheme === 'dark');
+        };
+
+        const applyFontSize = (size) => {
+            const body = document.body;
+            body.classList.remove('text-sm', 'text-base', 'text-lg');
+            if (size === 0) {
+                body.classList.add('text-sm');
+            } else if (size === 1) {
+                body.classList.add('text-base');
+            } else if (size === 2) {
+                body.classList.add('text-lg');
+            }
+            // Also adjust input field font sizes for consistency, especially in chat
+            const chatInput = document.getElementById('chatInput');
+            const initialInput = document.getElementById('initialInput');
+            if (chatInput) {
+                chatInput.classList.remove('text-sm', 'text-base', 'text-lg');
+                if (size === 0) chatInput.classList.add('text-sm');
+                else if (size === 1) chatInput.classList.add('text-base');
+                else if (size === 2) chatInput.classList.add('text-lg');
+            }
+            if (initialInput) {
+                initialInput.classList.remove('text-sm', 'text-base', 'text-lg');
+                if (size === 0) initialInput.classList.add('text-sm');
+                else if (size === 1) initialInput.classList.add('text-base');
+                else if (size === 2) initialInput.classList.add('text-lg');
+            }
+        };
+
+        const loadSettings = () => {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const langSelect = document.getElementById('langSelect');
+            const fontSizeSlider = document.getElementById('fontSizeSlider');
+            const darkModeToggleIcon = document.getElementById('darkModeToggleIcon');
+
+            // API Key
+            const savedApiKey = localStorage.getItem('geminiApiKey');
+            if (apiKeyInput) {
+                apiKeyInput.value = savedApiKey || '';
+            }
+
+            // Language
+            const savedLang = localStorage.getItem('language');
+            if (langSelect && savedLang) {
+                langSelect.value = savedLang;
+            }
+
+            // Theme (already applied on load, just update icon)
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            updateDarkModeToggleIcon(isDarkMode);
+
+            // Font Size
+            const savedFontSize = parseInt(localStorage.getItem('fontSize') || '1'); // Default to '1' (base)
+            if (fontSizeSlider) {
+                fontSizeSlider.value = savedFontSize;
+            }
+            applyFontSize(savedFontSize); // Apply on load
+        };
+
+        window.saveSettings = () => {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const langSelect = document.getElementById('langSelect');
+            const fontSizeSlider = document.getElementById('fontSizeSlider');
+
+            if (apiKeyInput) {
+                localStorage.setItem('geminiApiKey', apiKeyInput.value);
+                // Optionally, update the global API_KEY in ai-config.js if it exists
+                if (typeof API_KEY !== 'undefined') {
+                    API_KEY = apiKeyInput.value;
+                }
+            }
+            if (langSelect) {
+                localStorage.setItem('language', langSelect.value);
+                // Future: Add logic to change UI language if needed
+            }
+            if (fontSizeSlider) {
+                const newFontSize = fontSizeSlider.value;
+                localStorage.setItem('fontSize', newFontSize);
+                applyFontSize(parseInt(newFontSize)); // Apply immediately
+            }
+
+            window.toggleSettings(); // Close modal after saving
+            alert('Settings saved!'); // Simple feedback
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTheme();
+            loadSettings(); // Load and apply all settings on initial page load
+
+            const fontSizeSlider = document.getElementById('fontSizeSlider');
+            if (fontSizeSlider) {
+                fontSizeSlider.addEventListener('input', (event) => {
+                    applyFontSize(parseInt(event.target.value));
+                });
+            }
+        });
+    </script>
 </body>
 </html>

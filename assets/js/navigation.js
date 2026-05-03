@@ -6,8 +6,8 @@ window.toggleSidebar = function() {
 
 // ၂။ ဘာသာစကားအတွက် စာသားများ
 const translations = {
-    en: { dashboard: "Dashboard", ai_chat: "AI Chat", lottery: "Lottery Analysis", settings: "Settings", ask_placeholder: "Message Khittara...", empower: "Empowering your vision with AI.", history: "History", dark_mode: "Dark Mode", lang: "Language", save: "Save Changes" },
-    my: { dashboard: "ပင်မစာမျက်နှာ", ai_chat: "AI နှင့် စကားပြောရန်", lottery: "ထီဂဏန်း ခန့်မှန်းချက်", settings: "ဆက်တင်များ", ask_placeholder: "ဘာသိချင်ပါသလဲ...", empower: "သင်၏ အနာဂတ်အတွက် AI နှင့် ဖန်တီးပါ။", history: "မှတ်တမ်းများ", dark_mode: "ညဘက်အသုံးပြုပုံ", lang: "ဘာသာစကား", save: "သိမ်းဆည်းမည်" }
+    en: { dashboard: "Dashboard", ai_chat: "AI Chat", lottery: "Lottery Analysis", settings: "Settings", ask_placeholder: "Message Khittara...", empower: "Empowering your vision with AI.", history: "History", dark_mode: "Dark Mode", lang: "Language", save: "Save Changes", font_size: "Font Size" },
+    my: { dashboard: "ပင်မစာမျက်နှာ", ai_chat: "AI နှင့် စကားပြောရန်", lottery: "ထီဂဏန်း ခန့်မှန်းချက်", settings: "ဆက်တင်များ", ask_placeholder: "ဘာသိချင်ပါသလဲ...", empower: "သင်၏ အနာဂတ်အတွက် AI နှင့် ဖန်တီးပါ။", history: "မှတ်တမ်းများ", dark_mode: "ညဘက်အသုံးပြုပုံ", lang: "ဘာသာစကား", save: "သိမ်းဆည်းမည်", font_size: "ဖောင့်အရွယ်အစား" }
 };
 
 // ၃။ Menu ခလုတ်ကို Drag လုပ်တာနဲ့ Click နှိပ်တာ ခွဲခြားတဲ့ Logic
@@ -35,8 +35,17 @@ window.addEventListener('mousemove', (e) => {
     // ၁၀ pixel ထက်ပိုရွေ့မှ Drag လုပ်တယ်လို့ သတ်မှတ်မယ်
     if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
         hasMoved = true;
-        dragBtn.style.left = Math.max(10, Math.min(window.innerWidth - 64, e.clientX - 27)) + 'px';
-        dragBtn.style.top = Math.max(10, Math.min(window.innerHeight - 64, e.clientY - 27)) + 'px';
+        // Ensure the button stays within bounds
+        const btnWidth = dragBtn.offsetWidth;
+        const btnHeight = dragBtn.offsetHeight;
+        const maxX = window.innerWidth - btnWidth - 10; // 10px padding from right
+        const maxY = window.innerHeight - btnHeight - 10; // 10px padding from bottom
+
+        let newLeft = e.clientX - (btnWidth / 2);
+        let newTop = e.clientY - (btnHeight / 2);
+
+        dragBtn.style.left = Math.max(10, Math.min(maxX, newLeft)) + 'px';
+        dragBtn.style.top = Math.max(10, Math.min(maxY, newTop)) + 'px';
         // console.log('mousemove: dragging button.'); // Too verbose, uncomment only for specific drag debugging
     }
 });
@@ -45,7 +54,7 @@ window.addEventListener('mouseup', () => {
     if (isDragging) {
         const duration = Date.now() - startTime;
         // ၂၀၀ မီလီစက္ကန့်ထက်နည်းရင် သို့မဟုတ် အများကြီးမရွေ့ရင် "Click" လို့ယူဆပြီး Sidebar ဖွင့်မယ်
-        if (duration < 200 || !hasMoved) {
+        if (duration < 200 && !hasMoved) { // Changed condition slightly to be more strict for click
             console.log('mouseup: detected click, toggling sidebar.');
             window.toggleSidebar();
         } else {
@@ -72,8 +81,17 @@ window.addEventListener('touchmove', (e) => {
 
     if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
         hasMoved = true;
-        dragBtn.style.left = Math.max(10, Math.min(window.innerWidth - 64, e.touches[0].clientX - 27)) + 'px';
-        dragBtn.style.top = Math.max(10, Math.min(window.innerHeight - 64, e.touches[0].clientY - 27)) + 'px';
+        // Ensure the button stays within bounds
+        const btnWidth = dragBtn.offsetWidth;
+        const btnHeight = dragBtn.offsetHeight;
+        const maxX = window.innerWidth - btnWidth - 10;
+        const maxY = window.innerHeight - btnHeight - 10;
+
+        let newLeft = e.touches[0].clientX - (btnWidth / 2);
+        let newTop = e.touches[0].clientY - (btnHeight / 2);
+
+        dragBtn.style.left = Math.max(10, Math.min(maxX, newLeft)) + 'px';
+        dragBtn.style.top = Math.max(10, Math.min(maxY, newTop)) + 'px';
         // console.log('touchmove: dragging button (mobile).'); // Too verbose
     }
 }, { passive: true });
@@ -81,7 +99,7 @@ window.addEventListener('touchmove', (e) => {
 window.addEventListener('touchend', () => {
     if (isDragging) {
         const duration = Date.now() - startTime;
-        if (duration < 200 || !hasMoved) {
+        if (duration < 200 && !hasMoved) { // Changed condition slightly to be more strict for tap
             console.log('touchend: detected tap, toggling sidebar (mobile).');
             window.toggleSidebar();
         } else {
@@ -128,6 +146,9 @@ window.applyLanguage = function(lang) {
     if(document.getElementById('historyTitle')) document.getElementById('historyTitle').innerText = t.history;
     if(document.getElementById('modalTitle')) document.getElementById('modalTitle').innerText = t.settings;
     if(document.getElementById('saveBtn')) document.getElementById('saveBtn').innerText = t.save;
+    if(document.getElementById('langLabel')) document.getElementById('langLabel').innerText = t.lang;
+    if(document.getElementById('darkModeLabel')) document.getElementById('darkModeLabel').innerText = t.dark_mode;
+    if(document.getElementById('fontSizeLabel')) document.getElementById('fontSizeLabel').innerText = t.font_size;
 };
 
 // ၆။ Settings & Theme & Font Size
@@ -154,6 +175,7 @@ window.applyFontSize = function(size) {
             fontSizeValue = '16px'; // Base for medium/default size
             break;
     }
+    // Set the CSS custom property on the root element
     document.documentElement.style.setProperty('--base-font-size', fontSizeValue);
     console.log('CSS Variable --base-font-size set to:', fontSizeValue);
 };
