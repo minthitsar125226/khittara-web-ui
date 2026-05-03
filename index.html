@@ -21,11 +21,13 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-        body { background-color: #ffffff; font-family: 'Poppins', sans-serif; height: 100vh; width: 100vw; overflow: hidden; }
-        .oval-input { border-radius: 9999px; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Poppins', sans-serif; }
+        
         .hidden-view { display: none !important; }
+        .oval-input { border-radius: 9999px; }
+        
         .fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         .chat-scroll::-webkit-scrollbar { width: 4px; }
         .chat-scroll::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
@@ -39,21 +41,17 @@
             50% { color: #eab308; filter: drop-shadow(0 0 8px #eab308); }
         }
         .prose pre { background: #1e1e1e; padding: 1rem; border-radius: 1rem; overflow-x: auto; margin: 10px 0; border: 1px solid #333; }
-        
-        /* Fixed overlay issues */
-        #homeView { z-index: 100; position: fixed; inset: 0; background: white; }
-        #chatView { z-index: 50; display: flex; height: 100vh; width: 100vw; }
     </style>
 </head>
-<body>
+<body class="bg-white">
 
-    <section id="homeView" class="flex flex-col items-center justify-center p-6 space-y-12 fade-in">
-        <button onclick="toggleSettings()" class="absolute top-8 right-8 text-gray-300 hover:text-gold-500 transition-colors">
+    <div id="homeView" class="h-full w-full flex flex-col items-center justify-center p-6 space-y-12 fade-in">
+        <button onclick="toggleSettings()" class="absolute top-8 right-8 text-gray-300 hover:text-gold-500 transition-colors z-10">
             <i class="fas fa-cog text-2xl"></i>
         </button>
         
         <div class="text-center space-y-2">
-            <h1 class="text-5xl font-bold">Khittara <span class="text-gold-500 text-6xl">.</span></h1>
+            <h1 class="text-5xl font-bold tracking-tight">Khittara <span class="text-gold-500 text-6xl">.</span></h1>
             <p class="text-gray-400 font-light text-lg">The next generation AI platform.</p>
         </div>
 
@@ -66,9 +64,9 @@
                 </button>
             </div>
         </div>
-    </section>
+    </div>
 
-    <main id="chatView" class="hidden-view">
+    <div id="chatView" class="hidden-view h-full w-full flex">
         <aside class="w-72 bg-gray-50 border-r border-gray-100 flex flex-col p-6 h-full flex-shrink-0">
             <div class="mb-8">
                 <h2 class="text-xl font-bold mb-6">Khittara <span class="text-gold-500">.</span></h2>
@@ -95,7 +93,7 @@
             </div>
         </aside>
 
-        <section class="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
+        <main class="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
             <header class="h-16 border-b border-gray-50 flex items-center justify-between px-8 flex-shrink-0">
                 <span id="activeModelLabel" class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Model Active</span>
                 <div id="statusDot" class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_#10b981]"></div>
@@ -113,26 +111,26 @@
                     </button>
                 </div>
             </div>
-        </section>
-    </main>
+        </main>
+    </div>
 
-    <div id="settingsModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden-view" style="z-index: 200;">
-        <div class="bg-white w-full max-w-md p-8 rounded-[32px] shadow-2xl fade-in mx-4">
+    <div id="settingsModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden-view" style="z-index: 999;">
+        <div class="bg-white w-full max-w-md p-8 rounded-[32px] shadow-2xl mx-4">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">Settings</h2>
                 <button onclick="toggleSettings()" class="p-2 hover:bg-gray-100 rounded-full transition-colors"><i class="fas fa-times text-gray-400"></i></button>
             </div>
             <div class="space-y-5">
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Gemini API Key</label>
-                    <input type="password" id="apiKeyInput" placeholder="Paste your key here..." class="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm outline-none focus:border-gold-300 transition-all">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Gemini API Key</label>
+                    <input type="password" id="apiKeyInput" class="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm outline-none focus:border-gold-300">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Preferred Model</label>
-                    <input type="text" id="modelInput" placeholder="gemini-1.5-flash" class="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm outline-none focus:border-gold-300 transition-all">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Preferred Model</label>
+                    <input type="text" id="modelInput" class="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm outline-none focus:border-gold-300">
                 </div>
-                <button onclick="saveSettings()" class="w-full bg-gold-500 hover:bg-gold-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-gold-100 transition-all">Save Changes</button>
-                <button onclick="clearAllHistory()" class="w-full text-red-400 hover:text-red-600 text-xs font-medium py-2 transition-colors">Clear All Chat History</button>
+                <button onclick="saveSettings()" class="w-full bg-gold-500 text-white py-4 rounded-2xl font-bold">Save Changes</button>
+                <button onclick="clearAllHistory()" class="w-full text-red-400 text-xs py-2">Clear All Chat History</button>
             </div>
         </div>
     </div>
@@ -168,6 +166,7 @@
             chatMessages.innerHTML = '';
             homeView.classList.add('hidden-view');
             chatView.classList.remove('hidden-view');
+            setTimeout(() => document.getElementById('chatInput').focus(), 100);
         }
 
         function startChat() {
@@ -190,18 +189,11 @@
 
         function appendMessage(role, text) {
             const msgDiv = document.createElement('div');
-            msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} fade-in mb-6`;
-            
+            msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-6 fade-in`;
             const htmlContent = role === 'ai' ? marked.parse(text) : text;
-            
-            msgDiv.innerHTML = `
-                <div class="${role === 'user' ? 'bg-gold-500 text-white shadow-md' : 'bg-gray-100 text-gray-800 prose shadow-sm'} p-5 rounded-3xl max-w-[85%] border border-transparent">
-                    ${htmlContent}
-                </div>`;
-            
+            msgDiv.innerHTML = `<div class="${role === 'user' ? 'bg-gold-500 text-white' : 'bg-gray-100 text-gray-800 prose'} p-5 rounded-3xl max-w-[85%] shadow-sm">${htmlContent}</div>`;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-            
             saveToHistory(role, text);
             msgDiv.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
         }
@@ -209,7 +201,7 @@
         function saveToHistory(role, text) {
             let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
             if (!history[currentChatId]) {
-                history[currentChatId] = { title: text.substring(0, 35) + (text.length > 35 ? '...' : ''), messages: [] };
+                history[currentChatId] = { title: text.substring(0, 30) + '...', messages: [] };
             }
             history[currentChatId].messages.push({ role, text });
             localStorage.setItem('khittara_history', JSON.stringify(history));
@@ -221,8 +213,8 @@
             historyList.innerHTML = '';
             Object.keys(history).reverse().forEach(id => {
                 const item = document.createElement('div');
-                item.className = 'sidebar-item p-3 text-xs text-gray-600 flex items-center space-x-3 truncate';
-                item.innerHTML = `<i class="far fa-comment-alt text-[10px] text-gold-500"></i> <span>${history[id].title}</span>`;
+                item.className = 'sidebar-item p-3 text-xs text-gray-600 truncate flex items-center space-x-2';
+                item.innerHTML = `<i class="far fa-comment-alt text-gold-500"></i> <span>${history[id].title}</span>`;
                 item.onclick = () => loadChat(id);
                 historyList.appendChild(item);
             });
@@ -231,15 +223,14 @@
         function loadChat(id) {
             currentChatId = id;
             const history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
-            const chat = history[id];
             chatMessages.innerHTML = '';
             homeView.classList.add('hidden-view');
             chatView.classList.remove('hidden-view');
-            chat.messages.forEach(msg => {
+            history[id].messages.forEach(msg => {
                 const msgDiv = document.createElement('div');
                 msgDiv.className = `flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-6`;
                 const htmlContent = msg.role === 'ai' ? marked.parse(msg.text) : msg.text;
-                msgDiv.innerHTML = `<div class="${msg.role === 'user' ? 'bg-gold-500 text-white shadow-md' : 'bg-gray-100 text-gray-800 prose shadow-sm'} p-5 rounded-3xl max-w-[85%]">${htmlContent}</div>`;
+                msgDiv.innerHTML = `<div class="${msg.role === 'user' ? 'bg-gold-500 text-white' : 'bg-gray-100 text-gray-800 prose'} p-5 rounded-3xl max-w-[85%]">${htmlContent}</div>`;
                 chatMessages.appendChild(msgDiv);
                 msgDiv.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
             });
@@ -247,7 +238,7 @@
         }
 
         function clearAllHistory() {
-            if(confirm("Delete all chats permanently?")) {
+            if(confirm("Delete all history?")) {
                 localStorage.removeItem('khittara_history');
                 loadHistoryList();
                 newChat();
@@ -257,21 +248,17 @@
 
         function showThinking() {
             if(document.getElementById('thinkingIndicator')) return;
-            const thinkingDiv = document.createElement('div');
-            thinkingDiv.id = 'thinkingIndicator';
-            thinkingDiv.className = 'flex justify-start fade-in mb-6';
-            thinkingDiv.innerHTML = `
-                <div class="bg-gray-100 p-4 rounded-3xl flex items-center space-x-3 border border-gray-200">
-                    <i class="fas fa-microchip thinking-glow text-lg"></i>
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Thinking...</span>
-                </div>`;
-            chatMessages.appendChild(thinkingDiv);
+            const div = document.createElement('div');
+            div.id = 'thinkingIndicator';
+            div.className = 'flex justify-start mb-6 fade-in';
+            div.innerHTML = `<div class="bg-gray-100 p-4 rounded-3xl flex items-center space-x-3"><i class="fas fa-microchip thinking-glow"></i><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Thinking...</span></div>`;
+            chatMessages.appendChild(div);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         function hideThinking() {
-            const indicator = document.getElementById('thinkingIndicator');
-            if (indicator) indicator.remove();
+            const el = document.getElementById('thinkingIndicator');
+            if (el) el.remove();
         }
 
         async function processAI(prompt) {
@@ -286,9 +273,9 @@
             }
         }
 
-        // Enter key handling
-        document.getElementById('initialInput').onkeypress = (e) => e.key === 'Enter' && startChat();
-        document.getElementById('chatInput').onkeypress = (e) => e.key === 'Enter' && sendMessage();
+        // Key listeners
+        document.getElementById('initialInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') startChat(); });
+        document.getElementById('chatInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') sendMessage(); });
     </script>
 </body>
 </html>
