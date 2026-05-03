@@ -20,12 +20,12 @@ function sendMessage(inputId) {
 async function processAI(prompt) {
     showThinking();
     try {
-        const aiResponse = await AI_CONFIG.fetchAIResponse(prompt);
+        const response = await AI_CONFIG.fetchAIResponse(prompt);
         hideThinking();
-        appendMessage('ai', aiResponse || "No response from AI.");
+        appendMessage('ai', response);
     } catch (e) {
         hideThinking();
-        appendMessage('ai', "Error: Check your API Key.");
+        appendMessage('ai', "Error fetching AI response.");
     }
 }
 
@@ -34,7 +34,7 @@ function appendMessage(role, text) {
     const div = document.createElement('div');
     div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-8`;
     const content = role === 'ai' ? marked.parse(text) : text;
-    div.innerHTML = `<div class="message-bubble ${role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'} shadow-sm">${content}</div>`;
+    div.innerHTML = `<div class="message-bubble ${role === 'user' ? 'bg-yellow-500 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-800'}">${content}</div>`;
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
     saveToHistory(role, text);
@@ -58,7 +58,7 @@ function hideThinking() {
 
 function saveToHistory(role, text) {
     let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
-    if (!history[currentChatId]) history[currentChatId] = { title: text.substring(0, 20), messages: [] };
+    if (!history[currentChatId]) history[currentChatId] = { title: text.substring(0, 25), messages: [] };
     history[currentChatId].messages.push({ role, text });
     localStorage.setItem('khittara_history', JSON.stringify(history));
     loadHistoryUI();
@@ -71,22 +71,26 @@ function loadHistoryUI() {
     list.innerHTML = '';
     Object.keys(history).reverse().forEach(id => {
         const item = document.createElement('div');
-        item.className = 'p-3 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl cursor-pointer text-sm truncate mb-1';
-        item.innerHTML = `<i class="far fa-comment-alt mr-3 text-yellow-500"></i> ${history[id].title}`;
+        item.className = 'p-3 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl cursor-pointer text-sm truncate mb-1 text-gray-500';
+        item.innerHTML = `<i class="far fa-comment-alt mr-3"></i> ${history[id].title}`;
         item.onclick = () => {
             currentChatId = id;
             document.getElementById('chatMessages').innerHTML = '';
             history[id].messages.forEach(m => {
-                const container = document.getElementById('chatMessages');
-                const div = document.createElement('div');
-                div.className = `flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} mb-8`;
-                const content = m.role === 'ai' ? marked.parse(m.text) : m.text;
-                div.innerHTML = `<div class="message-bubble ${m.role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}">${content}</div>`;
-                container.appendChild(div);
+                appendMessageUI(m.role, m.text);
             });
             switchView('chat');
         };
         list.appendChild(item);
     });
 }
-window.onload = loadHistoryUI;
+
+function appendMessageUI(role, text) {
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-8`;
+    const content = role === 'ai' ? marked.parse(text) : text;
+    div.innerHTML = `<div class="message-bubble ${role === 'user' ? 'bg-yellow-500 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-800'}">${content}</div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
