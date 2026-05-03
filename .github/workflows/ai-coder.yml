@@ -30,17 +30,8 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
-        run: |
-          # Folder နှစ်ထပ်ဖြစ်နေတဲ့ ပြဿနာကို ဖြေရှင်းရန် ဖိုင်ကို လိုက်ရှာပါသည်
-          REAL_PATH=$(find . -name "ai_processor.py" | head -n 1)
-          
-          if [ -z "$REAL_PATH" ]; then
-            echo "Error: ai_processor.py not found!"
-            exit 1
-          fi
-          
-          echo "Executing AI Agent at: $REAL_PATH"
-          python3 "$REAL_PATH"
+        # လိပ်စာက အပြင်မှာမို့လို့ ဒီလိုပဲ တိုက်ရိုက်ခေါ်ပါမယ်
+        run: python3 ai_processor.py
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
