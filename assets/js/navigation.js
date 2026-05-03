@@ -112,10 +112,28 @@ window.applyLanguage = function(lang) {
     if(document.getElementById('saveBtn')) document.getElementById('saveBtn').innerText = t.save;
 };
 
-// ၆။ Settings & Theme
+// ၆။ Settings & Theme & Font Size
 window.toggleTheme = function() {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+};
+
+// New function to apply font size
+window.applyFontSize = function(size) {
+    let fontSizeValue;
+    switch(size) {
+        case 'small':
+            fontSizeValue = '14px'; // Base for small size
+            break;
+        case 'large':
+            fontSizeValue = '18px'; // Base for large size
+            break;
+        case 'medium':
+        default:
+            fontSizeValue = '16px'; // Base for medium/default size
+            break;
+    }
+    document.documentElement.style.setProperty('--base-font-size', fontSizeValue);
 };
 
 window.toggleSettings = function() {
@@ -123,23 +141,72 @@ window.toggleSettings = function() {
     if(modal) {
         modal.classList.toggle('hidden');
         modal.style.display = modal.classList.contains('hidden') ? 'none' : 'flex';
+
+        // When opening the settings modal, ensure the select elements reflect the current saved state
+        if (!modal.classList.contains('hidden')) {
+            // Language selection
+            const langSelect = document.getElementById('langSelect');
+            if (langSelect) {
+                langSelect.value = localStorage.getItem('language') || 'en';
+            }
+
+            // API Key input
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            if (apiKeyInput) { 
+                const savedKey = localStorage.getItem('khittara_api_key');
+                if (savedKey) apiKeyInput.value = savedKey;
+            }
+
+            // Font size selection
+            const fontSizeSelect = document.getElementById('fontSizeSelect');
+            if (fontSizeSelect) {
+                fontSizeSelect.value = localStorage.getItem('font-size') || 'medium';
+            }
+        }
     }
 };
 
 window.saveSettings = function() {
-    const lang = document.getElementById('langSelect').value;
+    // Save Language setting
+    const langSelect = document.getElementById('langSelect');
+    const lang = langSelect ? langSelect.value : 'en'; // Default to 'en' if element not found
     localStorage.setItem('language', lang);
-    localStorage.setItem('khittara_api_key', document.getElementById('apiKeyInput').value);
-    window.applyLanguage(lang);
-    window.toggleSettings();
+    window.applyLanguage(lang); // Apply language change immediately
+
+    // Save API Key setting
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    if (apiKeyInput) {
+        localStorage.setItem('khittara_api_key', apiKeyInput.value);
+    }
+
+    // Save Font Size setting
+    const fontSizeSelect = document.getElementById('fontSizeSelect');
+    const fontSize = fontSizeSelect ? fontSizeSelect.value : 'medium'; // Default to 'medium'
+    localStorage.setItem('font-size', fontSize);
+    window.applyFontSize(fontSize); // Apply font size change immediately
+
+    window.toggleSettings(); // Close the settings modal
 };
 
 // ၇။ စာမျက်နှာ စဖွင့်ချိန်မှာ လုပ်ရမည့်အလုပ်များ
 window.addEventListener('DOMContentLoaded', () => {
+    // Apply saved theme
     if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+
+    // Apply saved language
     const savedLang = localStorage.getItem('language') || 'en';
-    if(document.getElementById('langSelect')) document.getElementById('langSelect').value = savedLang;
-    window.applyLanguage(savedLang);
+    const langSelect = document.getElementById('langSelect');
+    if(langSelect) langSelect.value = savedLang; // Set select box value
+    window.applyLanguage(savedLang); // Apply text translations
+
+    // Load saved API Key (no need to apply, just populate the input if it exists)
     const savedKey = localStorage.getItem('khittara_api_key');
-    if(document.getElementById('apiKeyInput') && savedKey) document.getElementById('apiKeyInput').value = savedKey;
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    if(apiKeyInput && savedKey) apiKeyInput.value = savedKey;
+
+    // Apply saved font size
+    const savedFontSize = localStorage.getItem('font-size') || 'medium';
+    const fontSizeSelect = document.getElementById('fontSizeSelect');
+    if (fontSizeSelect) fontSizeSelect.value = savedFontSize; // Set select box value
+    window.applyFontSize(savedFontSize); // Apply font size to the document
 });

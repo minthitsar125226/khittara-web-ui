@@ -4,6 +4,22 @@
     --gold: #eab308;
     --sidebar-bg: #ffffff;
     --chat-bg: #ffffff;
+    --base-font-size: 16px; /* Default for Medium */
+    --message-font-size: calc(var(--base-font-size) * 0.95); /* Adjusted from original 0.95rem */
+    --sidebar-item-font-size: calc(var(--base-font-size) * 0.9); /* New explicit size for sidebar items */
+}
+
+/* Font size adjustments based on user selection */
+body.font-small {
+    --base-font-size: 15px;
+}
+
+body.font-medium {
+    --base-font-size: 16px;
+}
+
+body.font-large {
+    --base-font-size: 17px;
 }
 
 body.dark-mode {
@@ -13,10 +29,11 @@ body.dark-mode {
     color: #f3f4f6;
 }
 
-body { 
-    font-family: 'Inter', sans-serif; 
-    margin: 0; 
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
     -webkit-tap-highlight-color: transparent;
+    font-size: var(--base-font-size); /* Apply base font size to body */
 }
 
 /* Draggable Button */
@@ -46,16 +63,17 @@ body {
 .sidebar-open #sidebarOverlay { display: block; }
 
 /* View Containers */
-.view-container { 
-    display: none; height: 100vh; width: 100vw; 
+.view-container {
+    display: none; height: 100vh; width: 100vw;
     position: absolute; top: 0; left: 0;
 }
 .view-active { display: flex !important; }
 
 /* Message Bubbles */
-.message-bubble { 
-    padding: 14px 18px; border-radius: 20px; max-width: 88%; 
-    font-size: 0.95rem; line-height: 1.5; word-wrap: break-word;
+.message-bubble {
+    padding: 14px 18px; border-radius: 20px; max-width: 88%;
+    font-size: var(--message-font-size); /* Use CSS variable */
+    line-height: 1.5; word-wrap: break-word;
 }
 .justify-end .message-bubble { background: var(--gold); color: white; border-bottom-right-radius: 4px; }
 .justify-start .message-bubble { background: #f3f4f6; color: #1f2937; border-bottom-left-radius: 4px; }
@@ -67,9 +85,10 @@ body.dark-mode .justify-start .message-bubble { background: #1e293b; color: #f3f
 
 /* Sidebar Items */
 .sidebar-item {
-    height: 52px; display: flex; align-items: center; 
-    border-radius: 14px; color: #6b7280; cursor: pointer; 
+    height: 52px; display: flex; align-items: center;
+    border-radius: 14px; color: #6b7280; cursor: pointer;
     margin-bottom: 4px; padding: 0 16px; transition: 0.2s;
+    font-size: var(--sidebar-item-font-size); /* Use CSS variable */
 }
 .active-tab, .sidebar-item:hover { background: #f8f9fa; color: var(--gold); }
 body.dark-mode .sidebar-item:hover, body.dark-mode .active-tab { background: #1f2937; }

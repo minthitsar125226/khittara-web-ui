@@ -1,5 +1,36 @@
 let currentChatId = null;
 
+const FONT_SIZES = {
+    'small': 0.9,
+    'medium': 1.0,
+    'large': 1.1,
+    'xlarge': 1.2
+};
+const DEFAULT_FONT_SIZE_KEY = 'medium';
+const LOCAL_STORAGE_FONT_SIZE_KEY = 'khittara_fontSize';
+
+function setFontSize(sizeKey) {
+    if (!FONT_SIZES[sizeKey]) {
+        console.warn(`Unknown font size key: ${sizeKey}. Defaulting to ${DEFAULT_FONT_SIZE_KEY}.`);
+        sizeKey = DEFAULT_FONT_SIZE_KEY;
+    }
+
+    const multiplier = FONT_SIZES[sizeKey];
+    document.documentElement.style.setProperty('--base-font-multiplier', multiplier);
+    localStorage.setItem(LOCAL_STORAGE_FONT_SIZE_KEY, sizeKey);
+
+    // Update the UI element (e.g., radio buttons) to reflect the saved size
+    const fontOption = document.querySelector(`input[name="fontSize"][value="${sizeKey}"]`);
+    if (fontOption) {
+        fontOption.checked = true;
+    }
+}
+
+function loadFontSize() {
+    const savedSizeKey = localStorage.getItem(LOCAL_STORAGE_FONT_SIZE_KEY) || DEFAULT_FONT_SIZE_KEY;
+    setFontSize(savedSizeKey);
+}
+
 function newChat() {
     currentChatId = Date.now().toString();
     document.getElementById('chatMessages').innerHTML = '';
@@ -90,4 +121,10 @@ function renderHistory() {
     });
 }
 
-window.addEventListener('DOMContentLoaded', renderHistory);
+window.addEventListener('DOMContentLoaded', () => {
+    renderHistory();
+    loadFontSize(); // Load font size setting on page load
+});
+
+// Expose setFontSize to the global scope so it can be called from HTML
+window.setFontSize = setFontSize;
