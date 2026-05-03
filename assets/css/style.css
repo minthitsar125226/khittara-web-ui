@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
 :root {
     --gold: #eab308;
@@ -13,7 +13,11 @@ body.dark-mode {
     color: #f3f4f6;
 }
 
-body { font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; transition: background 0.3s; }
+body { 
+    font-family: 'Inter', sans-serif; 
+    margin: 0; 
+    -webkit-tap-highlight-color: transparent;
+}
 
 /* Draggable Button */
 #menuToggleBtn {
@@ -27,8 +31,8 @@ body { font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; transiti
 
 /* Sidebar Drawer */
 .floating-sidebar {
-    position: fixed; left: -280px; top: 0; bottom: 0;
-    width: 260px; background: var(--sidebar-bg);
+    position: fixed; left: -300px; top: 0; bottom: 0;
+    width: 280px; background: var(--sidebar-bg);
     border-right: 1px solid rgba(0,0,0,0.08);
     display: flex; flex-direction: column; padding: 20px 12px;
     z-index: 2002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -41,32 +45,40 @@ body { font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; transiti
 }
 .sidebar-open #sidebarOverlay { display: block; }
 
-/* Views */
-.view-container { display: none; height: 100vh; width: 100vw; }
+/* View Containers */
+.view-container { 
+    display: none; height: 100vh; width: 100vw; 
+    position: absolute; top: 0; left: 0;
+}
 .view-active { display: flex !important; }
 
 /* Message Bubbles */
 .message-bubble { 
-    padding: 14px 20px; border-radius: 22px; max-width: 85%; 
-    line-height: 1.6; font-size: 0.95rem;
+    padding: 14px 18px; border-radius: 20px; max-width: 88%; 
+    font-size: 0.95rem; line-height: 1.5; word-wrap: break-word;
 }
 .justify-end .message-bubble { background: var(--gold); color: white; border-bottom-right-radius: 4px; }
 .justify-start .message-bubble { background: #f3f4f6; color: #1f2937; border-bottom-left-radius: 4px; }
 body.dark-mode .justify-start .message-bubble { background: #1e293b; color: #f3f4f6; }
 
 /* Thinking Animation */
-.dot { display: inline-block; width: 7px; height: 7px; background: var(--gold); border-radius: 50%; margin-right: 4px; animation: bounce 0.6s infinite; }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.dot { display: inline-block; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; margin-right: 3px; animation: bounce 0.6s infinite; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 
 /* Sidebar Items */
 .sidebar-item {
-    height: 50px; display: flex; align-items: center; 
+    height: 52px; display: flex; align-items: center; 
     border-radius: 14px; color: #6b7280; cursor: pointer; 
-    margin-bottom: 5px; padding: 0 16px; transition: 0.2s;
+    margin-bottom: 4px; padding: 0 16px; transition: 0.2s;
 }
-.active-tab, .sidebar-item:hover { background: #f3f4f6; color: var(--gold); }
+.active-tab, .sidebar-item:hover { background: #f8f9fa; color: var(--gold); }
 body.dark-mode .sidebar-item:hover, body.dark-mode .active-tab { background: #1f2937; }
 
-/* Scrollbar */
-.chat-scroll::-webkit-scrollbar { width: 5px; }
+/* Responsive Scrollbar */
+.chat-scroll::-webkit-scrollbar { width: 4px; }
 .chat-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+
+/* Mobile Height Fix */
+@media (max-width: 768px) {
+    .view-container { height: 100%; height: -webkit-fill-available; }
+}
