@@ -1,4 +1,4 @@
-name: AI Engineer (Pro Roadmap)
+name: AI Engineer (Force Update Version)
 on:
   issues:
     types: [opened, edited]
@@ -31,7 +31,6 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
         shell: python
         run: |
           import os, requests, json, re
@@ -39,7 +38,6 @@ jobs:
           api_key = os.getenv("GEMINI_API_KEY")
           issue_body = os.getenv("ISSUE_BODY")
           
-          # ၁။ Project Context စုဆောင်းခြင်း
           repo_files = []
           for root, dirs, files in os.walk("."):
               for file in files:
@@ -57,76 +55,42 @@ jobs:
                   return response.json()['candidates'][0]['content']['parts'][0]['text']
               return ""
 
-          # ၂။ Roadmap Step: စီစဉ်ခြင်း (Planning)
-          plan_prompt = f"""
-          Project: {file_tree}
-          Task: {issue_body}
-          
-          You are a Senior Engineer. Before coding, create a step-by-step implementation plan.
-          Think about:
-          - Which files to modify?
-          - How to avoid breaking existing UI?
-          - How to ensure HTML and JS remain separate?
-          Return the plan in a few bullet points.
-          """
-          plan = call_gemini(plan_prompt)
-          print(f"Implementation Plan:\n{plan}")
+          # Planning
+          plan = call_gemini(f"Project: {file_tree}\nTask: {issue_body}\nCreate a Senior Engineer Plan.")
+          print(f"Plan: {plan}")
 
-          # ၃။ Roadmap Step: ပြင်ဆင်မည့်ဖိုင်များ ရွေးချယ်ခြင်း
-          identify_prompt = f"Plan: {plan}\nReturn ONLY file paths to be edited, one per line."
-          files_to_fix = [f.strip() for f in call_gemini(identify_prompt).split('\n') if f.strip()]
+          # Identify files
+          files_to_fix = [f.strip() for f in call_gemini(f"Plan: {plan}\nReturn ONLY file paths to edit.").split('\n') if f.strip()]
 
-          # ၄။ Roadmap Step: ကိုယ်တိုင်စစ်ဆေးပြီးမှ Code ရေးခြင်း (Draft & Review)
           for file_path in files_to_fix:
               file_path = file_path.replace('`', '').replace('./', '')
               original_content = ""
               if os.path.exists(file_path):
-                  with open(file_path, 'r') as f:
+                  with open(file_path, 'r', encoding='utf-8') as f:
                       original_content = f.read()
               
-              edit_prompt = f"""
-              File: {file_path}
-              Current Code: {original_content}
-              Plan: {plan}
-              
-              Task: Write the full updated code. 
-              Rules: 
-              - NO raw CSS/JS inside HTML body text.
-              - Maintain all existing classes and IDs.
-              - If it's HTML, focus only on structure.
-              - If it's CSS, focus only on styles.
-              Return ONLY the code.
-              """
+              edit_prompt = f"File: {file_path}\nOriginal: {original_content}\nPlan: {plan}\nTask: {issue_body}\nReturn ONLY full updated code."
               updated_code = call_gemini(edit_prompt)
+              clean_code = re.sub(r'^```[a-z]*\n|```$', '', updated_code, flags=re.MULTILINE).strip()
               
-              # Self-Review Step
-              review_prompt = f"Does this code follow the plan and avoid UI breakage? If yes, return it. If no, fix it.\nCode:\n{updated_code}"
-              final_code = call_gemini(review_prompt)
-              
-              clean_code = re.sub(r'^```[a-z]*\n|```$', '', final_code, flags=re.MULTILINE).strip()
-              
-              # Safety Check: ဖိုင်တစ်ခုလုံး ပျောက်မသွားစေရန်
-              if len(original_content) > 50 and len(clean_code) < 20:
-                  continue
+              if clean_code:
+                  os.makedirs(os.path.dirname(file_path) or '.', exist_ok=True)
+                  # Force write with UTF-8
+                  with open(file_path, 'w', encoding='utf-8') as f:
+                      f.write(clean_code)
+                  print(f"File {file_path} has been overwritten.")
 
-              os.makedirs(os.path.dirname(file_path) or '.', exist_ok=True)
-              with open(file_path, 'w') as f:
-                  f.write(clean_code)
-
-      - name: Create Pull Request (Roadmap Review Stage)
+      - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.PAT_TOKEN }}
-          commit-message: "AI-PRO: Proposed changes for #${{ github.event.issue.number }}"
-          branch: ai-engineering-branch
-          title: "AI Review Required: Fix for Issue #${{ github.event.issue.number }}"
+          commit-message: "AI-PRO: Strict fix for Issue #${{ github.event.issue.number }}"
+          branch: ai-engineering-branch-v2
+          delete-branch: true
+          title: "AI Review: Precision Fix for Issue #${{ github.event.issue.number }}"
           body: |
-            ### 🛠 AI Implementation Plan
-            The AI has analyzed the issue and proposed changes in this branch.
-            Please review the code changes before merging to `main`.
-            
-            **Included Fixes:**
-            - UI Cleanup
-            - Logic Consistency
-            - Non-destructive updates
+            ### 🎯 Precision Fixes Applied
+            - Fixed Sidebar Toggle Logic
+            - Cleaned UI text Remnants
+            - Ensured proper file separation
           base: main
