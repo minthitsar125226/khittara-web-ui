@@ -1,6 +1,6 @@
 let currentChatId = null;
 
-// Auto-scroll to the latest message
+// Function to handle auto-scrolling to the bottom
 function scrollToBottom() {
     const chatMessages = document.getElementById('chatMessages');
     setTimeout(() => {
@@ -8,7 +8,7 @@ function scrollToBottom() {
     }, 100);
 }
 
-// Switch between Home and Chat
+// Sidebar and Navigation logic
 window.switchView = function(viewId) {
     const historySection = document.getElementById('historySection');
     document.querySelectorAll('.view-container').forEach(v => v.classList.add('hidden'));
@@ -25,8 +25,7 @@ window.switchView = function(viewId) {
 
 window.newChat = function() {
     currentChatId = Date.now().toString();
-    const chatMessages = document.getElementById('chatMessages');
-    chatMessages.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-10 py-20"><i class="fas fa-comment-dots text-7xl mb-4"></i><p class="font-bold text-xl">Chat Started</p></div>`;
+    document.getElementById('chatMessages').innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-10 py-20"><i class="fas fa-comment-dots text-7xl mb-4"></i><p class="font-bold text-xl">New Khittara Chat Started</p></div>`;
     window.switchView('chat');
 };
 
@@ -43,7 +42,7 @@ window.sendMessage = function(inputId) {
 
     appendMessageUI('user', val);
     input.value = ''; 
-    input.style.height = '40px'; 
+    input.style.height = '40px'; // Reset height
     processAI(val);
 };
 
@@ -62,12 +61,17 @@ async function processAI(prompt) {
 function appendMessageUI(role, text) {
     const chatMessages = document.getElementById('chatMessages');
     const div = document.createElement('div');
-    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-6 px-1`;
-    div.innerHTML = `<div class="message-bubble ${role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}">${role === 'ai' ? marked.parse(text) : text}</div>`;
-    chatMessages.appendChild(div);
+    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} px-1`;
     
+    const content = role === 'ai' ? marked.parse(text) : text;
+    div.innerHTML = `<div class="message-bubble ${role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}">${content}</div>`;
+    
+    chatMessages.appendChild(div);
     scrollToBottom();
+    
+    // Highlight code if present
     div.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+    
     if(role === 'user') saveToHistory(role, text);
 }
 
@@ -75,13 +79,16 @@ function showThinking() {
     if(document.getElementById('thinkingIndicator')) return;
     const div = document.createElement('div');
     div.id = 'thinkingIndicator';
-    div.className = 'flex justify-start mb-6 px-1';
+    div.className = 'flex justify-start px-1';
     div.innerHTML = `<div class="bg-gray-100 dark:bg-zinc-800 p-4 rounded-2xl flex space-x-1"><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.4s"></div></div>`;
     document.getElementById('chatMessages').appendChild(div);
     scrollToBottom();
 }
 
-function hideThinking() { const el = document.getElementById('thinkingIndicator'); if (el) el.remove(); }
+function hideThinking() { 
+    const el = document.getElementById('thinkingIndicator'); 
+    if (el) el.remove(); 
+}
 
 function saveToHistory(role, text) {
     let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
@@ -117,13 +124,15 @@ window.deleteChat = function(e, id) {
 window.loadChat = function(id) {
     const history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
     if(!history[id]) return;
-    currentChatId = id; window.switchView('chat'); 
+    currentChatId = id; 
+    window.switchView('chat'); 
     document.getElementById('chatMessages').innerHTML = '';
     history[id].messages.forEach(m => appendMessageUI(m.role, m.text));
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     window.renderHistory();
+    // Initial UI check
     const homeView = document.getElementById('homeView');
     if(homeView && !homeView.classList.contains('hidden')) {
         document.getElementById('historySection').classList.add('hidden');
