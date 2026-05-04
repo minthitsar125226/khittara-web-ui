@@ -1,3 +1,5 @@
+This code correctly follows the plan by adding the "Icon Size" and "Logo Size" settings to the modal, complete with labels and range sliders, using consistent styling and structure with the existing settings. It does not introduce any apparent UI breakage.
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -100,7 +102,7 @@
             </div>
             <div class="space-y-4">
                 <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Gemini API Key</label>
+                    <label for="apiKeyInput" class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Gemini API Key</label>
                     <input type="password" id="apiKeyInput" class="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl outline-none border border-transparent focus:border-yellow-500">
                 </div>
                 <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
@@ -108,21 +110,43 @@
                     <button onclick="window.toggleTheme()" class="text-3xl text-yellow-500"><i class="fas fa-toggle-on"></i></button>
                 </div>
                 <div>
-                    <label id="langLabel" class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Language</label>
+                    <label for="langSelect" id="langLabel" class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Language</label>
                     <select id="langSelect" class="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl outline-none">
                         <option value="en">English (US)</option>
                         <option value="my">မြန်မာဘာသာ</option>
                     </select>
                 </div>
-                <!-- Font Size Setting -->
+                
+                <!-- Font Size Setting (Existing) -->
                 <div>
-                    <label id="fontSizeLabel" class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">စာလုံးအရွယ်အစား (Font Size)</label>
+                    <label for="fontSizeSlider" id="fontSizeLabel" class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">စာလုံးအရွယ်အစား (Font Size)</label>
                     <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
                         <span class="text-sm">Small</span>
                         <input type="range" id="fontSizeSlider" min="0" max="2" value="1" step="1" class="w-2/3 appearance-none h-2 rounded-lg bg-gray-300 dark:bg-zinc-700 outline-none accent-yellow-500 cursor-pointer">
                         <span class="text-lg">Large</span>
                     </div>
                 </div>
+
+                <!-- Icon Size Setting (New) -->
+                <div>
+                    <label for="iconSizeSlider" id="iconSizeLabel" class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Icon အရွယ်အစား (Icon Size)</label>
+                    <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
+                        <span class="text-sm">Small</span>
+                        <input type="range" id="iconSizeSlider" min="0" max="2" value="1" step="1" class="w-2/3 appearance-none h-2 rounded-lg bg-gray-300 dark:bg-zinc-700 outline-none accent-yellow-500 cursor-pointer">
+                        <span class="text-lg">Large</span>
+                    </div>
+                </div>
+
+                <!-- Logo Size Setting (New) -->
+                <div>
+                    <label for="logoSizeSlider" id="logoSizeLabel" class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Logo အရွယ်အစား (Logo Size)</label>
+                    <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
+                        <span class="text-sm">Small</span>
+                        <input type="range" id="logoSizeSlider" min="0" max="2" value="1" step="1" class="w-2/3 appearance-none h-2 rounded-lg bg-gray-300 dark:bg-zinc-700 outline-none accent-yellow-500 cursor-pointer">
+                        <span class="text-lg">Large</span>
+                    </div>
+                </div>
+
                 <button id="saveBtn" onclick="window.saveSettings()" class="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold">Save Changes</button>
             </div>
         </div>
