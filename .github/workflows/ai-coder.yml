@@ -1,11 +1,11 @@
-name: AI Auto-Coder (Fixed Model)
+name: AI Auto-Coder (Advanced Safety)
 on:
   issues:
     types: [opened, edited]
 
 jobs:
   auto_fix:
-    if: contains(github.event.issue.title, 'AI-FIX')
+    if: contains(github.event.issue.title, 'AI-')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -37,18 +37,17 @@ jobs:
           api_key = os.getenv("GEMINI_API_KEY")
           issue_body = os.getenv("ISSUE_BODY")
 
-          # ၁။ Repo Structure ဆွဲထုတ်ခြင်း
           repo_files = []
           for root, dirs, files in os.walk("."):
               for file in files:
                   path = os.path.join(root, file).replace("./", "")
-                  if not any(x in path for x in ['.git/', 'node_modules/', '__pycache__', '.github/']):
+                  if not any(x in path for x in ['.git/', 'node_modules/', '.github/']):
                       repo_files.append(path)
           
           file_tree = "\n".join(repo_files)
 
           def call_gemini(prompt):
-              # Pydroid 3 ကရတဲ့ List ထဲက Model နာမည် (gemini-2.5-flash ကို သုံးထားသည်)
+              # ပိုတော်သော gemini-2.5-flash ကို သုံးထားသည်
               model_name = "gemini-2.5-flash" 
               url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
               
@@ -61,23 +60,18 @@ jobs:
               
               response = requests.post(url, json=payload)
               if response.status_code != 200:
-                  print(f"Error from API: {response.status_code} - {response.text}")
+                  print(f"Error: {response.status_code}")
                   return ""
               
               res_json = response.json()
               return res_json['candidates'][0]['content']['parts'][0]['text']
 
-          # ၂။ ပြင်ရမည့်ဖိုင်များ ရွေးချယ်ခြင်း
-          identify_prompt = f"Project Structure:\n{file_tree}\n\nTask: {issue_body}\nIdentify files to edit. Return ONLY file paths, one per line."
-          
+          # ၁။ ဖိုင်ရွေးချယ်ခြင်း
+          identify_prompt = f"Project Structure:\n{file_tree}\n\nTask: {issue_body}\nIdentify files. Return ONLY paths."
           selected_files_text = call_gemini(identify_prompt).strip()
-          if not selected_files_text:
-              print("No files identified or API error.")
-              exit(0)
-              
           files_to_fix = [f.strip() for f in selected_files_text.split('\n') if f.strip()]
 
-          # ၃။ Code ပြင်ဆင်ခြင်း
+          # ၂။ တစ်ဖိုင်ချင်းစီကို တိကျစွာ ပြင်ဆင်ခြင်း
           for file_path in files_to_fix:
               file_path = file_path.replace('`', '').replace('./', '')
               original_content = ""
@@ -85,18 +79,39 @@ jobs:
                   with open(file_path, 'r') as f:
                       original_content = f.read()
               
-              edit_prompt = f"File: {file_path}\nContent:\n{original_content}\n\nTask: {issue_body}\nReturn ONLY updated code. No markdown, no text."
+              edit_prompt = f"""
+              File: {file_path}
+              Current Content:
+              {original_content}
+
+              Task: {issue_body}
+
+              STRICT INSTRUCTIONS:
+              1. If editing HTML, DO NOT put raw CSS or JS inside <body> tags. Use separate files.
+              2. Ensure IDs used in JavaScript (e.g. fontSize) match exactly with the HTML.
+              3. DO NOT output any explanation text. ONLY the full code.
+              4. Remove any visible CSS variables from the HTML text content.
+              5. Ensure syntax is 100% correct.
+              """
+              
               updated_code = call_gemini(edit_prompt)
               
               if updated_code:
+                  # Markdown Clean-up
                   clean_code = re.sub(r'^```[a-z]*\n|```$', '', updated_code, flags=re.MULTILINE).strip()
+                  
+                  # Final Check: HTML ထဲမှာ CSS စာသားတွေ ကျန်မကျန် AI ကို ပြန်စစ်ခိုင်းခြင်း
+                  if file_path.endswith('.html'):
+                      verify_prompt = f"Does this HTML contain raw CSS text inside <body>? If yes, remove it and return clean HTML. Otherwise return as is.\n\nCode:\n{clean_code}"
+                      clean_code = re.sub(r'^```[a-z]*\n|```$', '', call_gemini(verify_prompt), flags=re.MULTILINE).strip()
+
                   os.makedirs(os.path.dirname(file_path) or '.', exist_ok=True)
                   with open(file_path, 'w') as f:
                       f.write(clean_code)
-                  print(f"Updated: {file_path}")
+                  print(f"Successfully updated: {file_path}")
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "AI: Automated updates for Issue #${{ github.event.issue.number }}"
+          commit_message: "AI-LEARN: Corrected code placement and logic for #${{ github.event.issue.number }}"
           branch: main
