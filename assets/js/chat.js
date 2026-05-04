@@ -1,19 +1,22 @@
 let currentChatId = null;
 
-// Function to handle auto-scrolling to the bottom
+// ပေးထားတဲ့ပုံထဲက Gemini style အတိုင်း အောက်ဆုံးကို auto scroll ဆင်းပေးတဲ့ function
 function scrollToBottom() {
-    const chatMessages = document.getElementById('chatMessages');
-    setTimeout(() => {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 100);
+    const container = document.getElementById('chatMessages');
+    if (container) {
+        setTimeout(() => {
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        }, 100);
+    }
 }
 
-// Sidebar and Navigation logic
+// Sidebar History logic
 window.switchView = function(viewId) {
     const historySection = document.getElementById('historySection');
     document.querySelectorAll('.view-container').forEach(v => v.classList.add('hidden'));
     document.getElementById(viewId + 'View').classList.remove('hidden');
     
+    // Home ရောက်ရင် History ဖျောက်မယ်၊ Chat ရောက်ရင် ပြမယ်
     if (viewId === 'home') {
         historySection.classList.add('hidden');
     } else {
@@ -25,7 +28,8 @@ window.switchView = function(viewId) {
 
 window.newChat = function() {
     currentChatId = Date.now().toString();
-    document.getElementById('chatMessages').innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-10 py-20"><i class="fas fa-comment-dots text-7xl mb-4"></i><p class="font-bold text-xl">New Khittara Chat Started</p></div>`;
+    const chatContainer = document.getElementById('chatMessages');
+    chatContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-10 py-20"><i class="fas fa-comment-dots text-7xl mb-4"></i><p class="font-bold text-xl">Start a new conversation</p></div>`;
     window.switchView('chat');
 };
 
@@ -35,6 +39,7 @@ window.sendMessage = function(inputId) {
     if (!val) return;
     
     if (!currentChatId) currentChatId = Date.now().toString();
+    
     if (inputId === 'initialInput') {
         window.switchView('chat');
         document.getElementById('chatMessages').innerHTML = '';
@@ -42,7 +47,7 @@ window.sendMessage = function(inputId) {
 
     appendMessageUI('user', val);
     input.value = ''; 
-    input.style.height = '40px'; // Reset height
+    input.style.height = '40px'; 
     processAI(val);
 };
 
@@ -54,23 +59,20 @@ async function processAI(prompt) {
         appendMessageUI('ai', response);
     } catch (e) {
         hideThinking();
-        appendMessageUI('ai', "Error: Check settings.");
+        appendMessageUI('ai', "Error: Connection problem. Please check your API key.");
     }
 }
 
 function appendMessageUI(role, text) {
-    const chatMessages = document.getElementById('chatMessages');
+    const chatContainer = document.getElementById('chatMessages');
     const div = document.createElement('div');
-    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} px-1`;
+    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} w-full px-1`;
     
-    const content = role === 'ai' ? marked.parse(text) : text;
-    div.innerHTML = `<div class="message-bubble ${role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}">${content}</div>`;
+    const bubbleClass = role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800';
+    div.innerHTML = `<div class="message-bubble ${bubbleClass}">${role === 'ai' ? marked.parse(text) : text}</div>`;
     
-    chatMessages.appendChild(div);
+    chatContainer.appendChild(div);
     scrollToBottom();
-    
-    // Highlight code if present
-    div.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
     
     if(role === 'user') saveToHistory(role, text);
 }
@@ -79,20 +81,20 @@ function showThinking() {
     if(document.getElementById('thinkingIndicator')) return;
     const div = document.createElement('div');
     div.id = 'thinkingIndicator';
-    div.className = 'flex justify-start px-1';
+    div.className = 'flex justify-start w-full px-1';
     div.innerHTML = `<div class="bg-gray-100 dark:bg-zinc-800 p-4 rounded-2xl flex space-x-1"><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.4s"></div></div>`;
     document.getElementById('chatMessages').appendChild(div);
     scrollToBottom();
 }
 
-function hideThinking() { 
-    const el = document.getElementById('thinkingIndicator'); 
-    if (el) el.remove(); 
+function hideThinking() {
+    const el = document.getElementById('thinkingIndicator');
+    if (el) el.remove();
 }
 
 function saveToHistory(role, text) {
     let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
-    if (!history[currentChatId]) history[currentChatId] = { title: text.substring(0, 30).replace(/\n/g, " ") + "...", messages: [] };
+    if (!history[currentChatId]) history[currentChatId] = { title: text.substring(0, 30) + "...", messages: [] };
     history[currentChatId].messages.push({ role, text });
     localStorage.setItem('khittara_history', JSON.stringify(history));
     window.renderHistory();
@@ -111,16 +113,6 @@ window.renderHistory = function() {
     });
 };
 
-window.deleteChat = function(e, id) {
-    e.stopPropagation();
-    if(confirm('Delete history?')) {
-        let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
-        delete history[id]; localStorage.setItem('khittara_history', JSON.stringify(history));
-        if (currentChatId === id) window.newChat();
-        window.renderHistory();
-    }
-};
-
 window.loadChat = function(id) {
     const history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
     if(!history[id]) return;
@@ -132,9 +124,8 @@ window.loadChat = function(id) {
 
 document.addEventListener('DOMContentLoaded', () => {
     window.renderHistory();
-    // Initial UI check
-    const homeView = document.getElementById('homeView');
-    if(homeView && !homeView.classList.contains('hidden')) {
+    // Start with history hidden if on home
+    if(document.getElementById('homeView').classList.contains('view-active')) {
         document.getElementById('historySection').classList.add('hidden');
     }
 });
