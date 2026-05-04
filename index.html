@@ -19,7 +19,7 @@
         <i class="fas fa-bars"></i>
     </button>
 
-    <div id="sidebarOverlay" onclick="window.toggleSidebar()" class="fixed inset-0 bg-black/50 z-[10000] hidden backdrop-blur-sm"></div>
+    <div id="sidebarOverlay" onclick="window.toggleSidebar()"></div>
 
     <nav class="fixed top-0 left-0 h-full w-72 bg-white dark:bg-zinc-950 z-[10001] transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl" id="mainSidebar">
         <div class="flex justify-between items-center px-4 py-6 mb-4">
@@ -39,7 +39,7 @@
             <i class="fas fa-comment-alt"></i><span class="sidebar-label ml-3">AI Chat</span>
         </div>
         
-        <div class="mt-8 mb-2 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">History</div>
+        <div class="mt-8 mb-2 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest font-inter">History</div>
         <div id="chatHistoryList" class="flex-1 overflow-y-auto px-2 chat-scroll space-y-1"></div>
 
         <div class="mt-auto border-t border-gray-100 dark:border-zinc-800 p-4">
@@ -50,7 +50,6 @@
     </nav>
 
     <main class="h-screen w-screen overflow-hidden relative flex flex-col">
-        
         <section id="homeView" class="view-container flex flex-col items-center justify-center p-6 text-center view-active grow">
             <div class="max-w-2xl w-full">
                 <h1 class="text-5xl md:text-7xl font-extrabold mb-4 logo-text">Khittara <span class="text-yellow-500">.</span></h1>
@@ -65,16 +64,14 @@
         </section>
 
         <section id="chatView" class="view-container hidden flex-col h-full overflow-hidden">
-            <div class="header-chat px-6 py-4 border-b dark:border-zinc-800 flex items-center justify-between bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md shrink-0">
+            <div class="px-6 py-4 border-b dark:border-zinc-800 flex items-center justify-between bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md shrink-0 z-10">
                 <div class="flex items-center">
                     <div class="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></div>
                     <span class="font-bold text-sm">Khittara AI Engine</span>
                 </div>
                 <button onclick="newChat()" class="text-[10px] bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-lg font-bold uppercase">New Chat</button>
             </div>
-
             <div id="chatMessages" class="flex-1 overflow-y-auto p-4 md:p-10 chat-scroll"></div>
-            
             <div class="input-area p-4 md:p-8 bg-white dark:bg-zinc-950 shrink-0">
                 <div class="max-w-4xl mx-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-[25px] flex p-1.5 shadow-xl">
                     <input type="text" id="chatInput" class="flex-1 bg-transparent px-4 py-2 outline-none text-sm" placeholder="Type message...">
@@ -92,14 +89,41 @@
                 <h2 class="text-2xl font-bold">Settings</h2>
                 <button onclick="window.toggleSettings()"><i class="fas fa-times text-gray-400 p-2"></i></button>
             </div>
-            <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 chat-scroll">
+            <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-2 chat-scroll">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Gemini API Key</label>
+                    <input type="password" id="apiKeyInput" class="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl outline-none border border-transparent focus:border-yellow-500" placeholder="Enter your key">
+                </div>
+                
                 <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
                     <span class="font-medium">Dark Mode</span>
                     <button onclick="window.toggleTheme()" class="text-3xl text-yellow-500">
                         <i class="fas fa-toggle-off" id="themeIcon"></i>
                     </button>
                 </div>
-                <button onclick="window.saveSettings()" class="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold mt-4">Save Changes</button>
+
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Font Size</label>
+                    <div class="p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
+                        <input type="range" id="fontSizeSlider" min="0" max="2" value="1" step="1" class="w-full accent-yellow-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Icon Size</label>
+                    <div class="p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
+                        <input type="range" id="iconSizeSlider" min="0" max="2" value="1" step="1" class="w-full accent-yellow-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">Logo Size</label>
+                    <div class="p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl">
+                        <input type="range" id="logoSizeSlider" min="0" max="2" value="1" step="1" class="w-full accent-yellow-500">
+                    </div>
+                </div>
+
+                <button onclick="window.saveSettings()" class="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold mt-4 shadow-lg">Save Changes</button>
             </div>
         </div>
     </div>
