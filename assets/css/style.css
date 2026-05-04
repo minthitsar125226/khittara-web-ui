@@ -4,27 +4,32 @@
 body.dark-mode { --sidebar-bg: #09090b; --chat-bg: #09090b; background-color: var(--chat-bg); color: #f3f4f6; }
 body { font-family: 'Inter', sans-serif; margin: 0; height: 100dvh; width: 100vw; overflow: hidden; background-color: var(--chat-bg); }
 
+/* Menu Toggle Button */
 #menuToggleBtn { position: fixed; top: 12px; left: 12px; width: 42px; height: 42px; background: var(--gold); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; z-index: 1000; border: none; box-shadow: 0 4px 12px rgba(234,179,8,0.3); }
 
+/* Sidebar */
 #mainSidebar { background-color: var(--sidebar-bg); transition: transform 0.3s ease; }
 #sidebarOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: none; backdrop-filter: blur(4px); }
 #sidebarOverlay.block { display: block !important; }
 
-/* Message Design */
-.message-bubble { padding: 12px 18px; border-radius: 20px; max-width: 85%; line-height: 1.6; word-wrap: break-word; font-size: 0.95rem; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-.justify-end .message-bubble { background: var(--gold); color: white; border-bottom-right-radius: 4px; }
-.justify-start .message-bubble { background: #f4f4f5; color: #18181b; border-bottom-left-radius: 4px; }
-body.dark-mode .justify-start .message-bubble { background: #18181b; color: #f4f4f5; }
-
-/* Chat Scroll Logic */
+/* Chat Messages Layout */
 #chatMessages { 
     display: flex;
     flex-direction: column;
     scroll-behavior: smooth;
-    overflow-y: auto;
+    gap: 1.5rem;
 }
 
-#chatInput { max-height: 120px; min-height: 40px; }
+/* Message Bubbles */
+.message-bubble { padding: 12px 18px; border-radius: 20px; max-width: 85%; line-height: 1.6; word-wrap: break-word; font-size: 0.95rem; }
+.justify-end .message-bubble { background: var(--gold); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 10px rgba(234,179,8,0.2); }
+.justify-start .message-bubble { background: #f4f4f5; color: #18181b; border-bottom-left-radius: 4px; border: 1px solid rgba(0,0,0,0.05); }
+body.dark-mode .justify-start .message-bubble { background: #18181b; color: #f4f4f5; border-color: rgba(255,255,255,0.05); }
 
+/* Textarea Logic */
+#chatInput { max-height: 150px; min-height: 40px; overflow-y: auto; }
+
+/* Custom Scrollbar */
 .chat-scroll::-webkit-scrollbar { width: 4px; }
 .chat-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+body.dark-mode .chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
