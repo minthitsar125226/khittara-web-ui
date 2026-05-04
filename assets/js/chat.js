@@ -1,159 +1,153 @@
 /**
- * Chat Logic for Khittara AI Hub
+ * Chat & History Management
  */
 
-let currentChatIndex = null;
+let currentChatId = null;
 
-// ၁။ Chat အသစ်စတင်ခြင်း
 window.newChat = function() {
-    currentChatIndex = null;
+    currentChatId = Date.now().toString();
     document.getElementById('chatMessages').innerHTML = `
-        <div class="flex flex-col items-center justify-center h-full opacity-50">
-            <i class="fas fa-robot text-4xl mb-4"></i>
-            <p>How can I help you today?</p>
+        <div class="flex flex-col items-center justify-center h-full opacity-20 select-none">
+            <i class="fas fa-robot text-6xl mb-4"></i>
+            <p class="font-bold">Khittara AI Hub</p>
         </div>
     `;
     window.switchView('chat');
 };
 
-// ၂။ Message ပို့ခြင်း
-window.sendMessage = async function(inputId) {
-    const inputElement = document.getElementById(inputId);
-    const message = inputElement.value.trim();
-    
-    if (!message) return;
+window.sendMessage = function(inputId) {
+    const input = document.getElementById(inputId);
+    const val = input.value.trim();
+    if (!val) return;
 
-    // အကယ်၍ Home View ကနေ ပို့တာဆိုရင် Chat View ကို ပြောင်းမယ်
+    if (!currentChatId) currentChatId = Date.now().toString();
     if (inputId === 'initialInput') {
         window.switchView('chat');
-        document.getElementById('chatMessages').innerHTML = ''; // Welcome screen ကို ဖယ်မယ်
+        document.getElementById('chatMessages').innerHTML = '';
     }
 
-    // User Message ကို UI မှာ ပြခြင်း
-    appendMessage('user', message);
-    inputElement.value = '';
-
-    // Keyboard ပိတ်သွားရင် သို့မဟုတ် စာရိုက်ပြီးရင် အောက်ဆုံးကို scroll ဆွဲပေးမယ်
-    scrollToBottom();
-
-    // AI ရဲ့ တုံ့ပြန်မှုကို ရယူခြင်း (Config/API ခေါ်ယူခြင်း)
-    try {
-        // Thinking Animation ပြမယ်
-        const loadingId = appendLoading();
-        
-        // Gemini API ခေါ်ယူခြင်း (ai-config.js ထဲက function ကို သုံးမည်)
-        const response = await getGeminiResponse(message);
-        
-        // Loading ဖယ်ပြီး AI message ထည့်မယ်
-        removeLoading(loadingId);
-        appendMessage('ai', response);
-        
-        // Chat History ကို Save လုပ်ခြင်း
-        saveToHistory(message, response);
-        
-    } catch (error) {
-        console.error("AI Error:", error);
-        appendMessage('ai', "Sorry, I encountered an error. Please check your API key.");
-    }
+    appendMessageUI('user', val);
+    input.value = '';
+    processAI(val);
 };
 
-// ၃။ Message Bubble များ ထည့်သွင်းခြင်း
-function appendMessage(role, text) {
-    const container = document.getElementById('chatMessages');
-    const wrapper = document.createElement('div');
-    wrapper.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-6`;
-    
-    // AI ဆိုရင် Markdown format လုပ်မယ်
-    const content = role === 'ai' ? marked.parse(text) : text;
+async function processAI(prompt) {
+    showThinking();
+    try {
+        const response = await AI_CONFIG.fetchAIResponse(prompt);
+        hideThinking();
+        appendMessageUI('ai', response);
+        saveToHistory('ai', response);
+    } catch (e) {
+        hideThinking();
+        appendMessageUI('ai', "API Error. Please check your key in Settings.");
+    }
+}
 
-    wrapper.innerHTML = `
-        <div class="message-bubble shadow-sm ${role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}">
+function appendMessageUI(role, text) {
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-6 px-2`;
+    
+    const content = role === 'ai' ? marked.parse(text) : text;
+    div.innerHTML = `
+        <div class="message-bubble ${role === 'user' ? 'bg-yellow-500 text-white shadow-lg' : 'bg-gray-100 dark:bg-zinc-800 shadow-sm'}">
             ${content}
         </div>
     `;
-    container.appendChild(wrapper);
     
-    // Code highlighting (AI တုံ့ပြန်မှုထဲမှာ code ပါရင်)
-    if (role === 'ai') {
-        wrapper.querySelectorAll('pre code').forEach((block) => {
-            hljs.highlightElement(block);
-        });
-    }
-    
+    container.appendChild(div);
+    scrollToBottom();
+    div.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+    if(role === 'user') saveToHistory('user', text);
+}
+
+function showThinking() {
+    if(document.getElementById('thinkingIndicator')) return;
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.id = 'thinkingIndicator';
+    div.className = 'flex justify-start mb-6 px-2';
+    div.innerHTML = `<div class="bg-gray-100 dark:bg-zinc-800 p-4 rounded-2xl flex space-x-1">
+        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div>
+        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.4s"></div>
+    </div>`;
+    container.appendChild(div);
     scrollToBottom();
 }
 
-// ၄။ Scroll Logic (Mobile မှာ အရေးကြီးသည်)
-function scrollToBottom() {
-    const container = document.getElementById('chatMessages');
-    container.scrollTo({
-        top: container.scrollHeight,
-        behavior: 'smooth'
-    });
-}
-
-// ၅။ Loading/Thinking Animation
-function appendLoading() {
-    const id = 'loading-' + Date.now();
-    const container = document.getElementById('chatMessages');
-    const wrapper = document.createElement('div');
-    wrapper.id = id;
-    wrapper.className = "flex justify-start mb-6";
-    wrapper.innerHTML = `
-        <div class="message-bubble bg-gray-100 dark:bg-zinc-800">
-            <div class="flex space-x-1">
-                <div class="dot w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div class="dot w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-                <div class="dot w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
-            </div>
-        </div>
-    `;
-    container.appendChild(wrapper);
-    scrollToBottom();
-    return id;
-}
-
-function removeLoading(id) {
-    const el = document.getElementById(id);
+function hideThinking() {
+    const el = document.getElementById('thinkingIndicator');
     if (el) el.remove();
 }
 
-// ၆။ History ကို LocalStorage တွင် သိမ်းဆည်းခြင်း
-function saveToHistory(userMsg, aiMsg) {
-    let chats = JSON.parse(localStorage.getItem('chat_history') || '[]');
-    
-    // လက်ရှိ chat အသစ်ဆိုရင် အပေါ်ဆုံးမှာ ထည့်မယ်
-    if (currentChatIndex === null) {
-        chats.unshift({
-            title: userMsg.substring(0, 30) + '...',
-            messages: [{ role: 'user', text: userMsg }, { role: 'ai', text: aiMsg }]
-        });
-        currentChatIndex = 0;
-    } else {
-        // ရှိပြီးသား chat ထဲကို message ထပ်ထည့်မယ်
-        chats[currentChatIndex].messages.push({ role: 'user', text: userMsg });
-        chats[currentChatIndex].messages.push({ role: 'ai', text: aiMsg });
+function saveToHistory(role, text) {
+    let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
+    if (!history[currentChatId]) {
+        history[currentChatId] = { title: text.substring(0, 30) + "...", messages: [] };
     }
-    
-    localStorage.setItem('chat_history', JSON.stringify(chats));
-    
-    // Sidebar က History UI ကို Update လုပ်ပေးဖို့ navigation.js ထဲက function ကို ခေါ်မယ်
-    if (window.renderHistory) window.renderHistory();
+    history[currentChatId].messages.push({ role, text });
+    localStorage.setItem('khittara_history', JSON.stringify(history));
+    window.renderHistory();
 }
 
-// ၇။ ရှိပြီးသား Chat ကို ပြန်ဖွင့်ခြင်း
-window.loadChat = function(index) {
-    const chats = JSON.parse(localStorage.getItem('chat_history') || '[]');
-    const chat = chats[index];
-    if (!chat) return;
+window.renderHistory = function() {
+    const history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
+    const list = document.getElementById('chatHistoryList');
+    if(!list) return;
+    list.innerHTML = '';
+    
+    Object.keys(history).sort((a,b) => b-a).forEach(id => {
+        const item = document.createElement('div');
+        item.className = 'group flex items-center justify-between p-3 hover:bg-gray-100 dark:hover:bg-zinc-900 rounded-xl cursor-pointer mb-1 transition-all';
+        item.innerHTML = `
+            <div class="flex items-center flex-1 overflow-hidden" onclick="loadChat('${id}')">
+                <i class="far fa-comment-alt mr-3 text-gray-400 text-xs"></i>
+                <span class="text-sm truncate">${history[id].title}</span>
+            </div>
+            <button onclick="deleteChat(event, '${id}')" class="p-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <i class="fas fa-trash-alt text-xs"></i>
+            </button>
+        `;
+        list.appendChild(item);
+    });
+};
 
-    currentChatIndex = index;
+window.deleteChat = function(e, id) {
+    e.stopPropagation();
+    if(confirm('Delete this history?')) {
+        let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
+        delete history[id];
+        localStorage.setItem('khittara_history', JSON.stringify(history));
+        if (currentChatId === id) window.newChat();
+        window.renderHistory();
+    }
+};
+
+window.loadChat = function(id) {
+    const history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
+    if(!history[id]) return;
+    currentChatId = id;
     const container = document.getElementById('chatMessages');
     container.innerHTML = '';
-    
-    chat.messages.forEach(msg => {
-        appendMessage(msg.role, msg.text);
-    });
-
+    history[id].messages.forEach(m => appendMessageUI(m.role, m.text));
     window.switchView('chat');
 };
+
+function scrollToBottom() {
+    const container = document.getElementById('chatMessages');
+    container.scrollTop = container.scrollHeight;
+}
+
+// Mobile Keyboard Adjust
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+        if (!document.getElementById('chatView').classList.contains('hidden')) {
+            document.body.style.height = window.visualViewport.height + 'px';
+            scrollToBottom();
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', window.renderHistory);
