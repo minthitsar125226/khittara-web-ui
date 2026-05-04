@@ -1,15 +1,16 @@
-name: AI Auto-Coder (Advanced Safety)
+name: AI Engineer (Pro Roadmap)
 on:
   issues:
     types: [opened, edited]
 
 jobs:
-  auto_fix:
+  professional_fix:
     if: contains(github.event.issue.title, 'AI-')
     runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout Code
@@ -26,52 +27,56 @@ jobs:
       - name: Install Dependencies
         run: pip install requests
 
-      - name: Run AI Agent Logic
+      - name: Advanced AI Logic (Think-Before-Act)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         shell: python
         run: |
           import os, requests, json, re
 
           api_key = os.getenv("GEMINI_API_KEY")
           issue_body = os.getenv("ISSUE_BODY")
-
+          
+          # ၁။ Project Context စုဆောင်းခြင်း
           repo_files = []
           for root, dirs, files in os.walk("."):
               for file in files:
                   path = os.path.join(root, file).replace("./", "")
                   if not any(x in path for x in ['.git/', 'node_modules/', '.github/']):
                       repo_files.append(path)
-          
           file_tree = "\n".join(repo_files)
 
           def call_gemini(prompt):
-              # ပိုတော်သော gemini-2.5-flash ကို သုံးထားသည်
-              model_name = "gemini-2.5-flash" 
-              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
-              
-              payload = {
-                  "contents": [{ 
-                      "role": "user",
-                      "parts": [{ "text": prompt }] 
-                  }]
-              }
-              
+              model = "gemini-2.5-flash" 
+              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+              payload = {"contents": [{"role": "user", "parts": [{"text": prompt}]}]}
               response = requests.post(url, json=payload)
-              if response.status_code != 200:
-                  print(f"Error: {response.status_code}")
-                  return ""
-              
-              res_json = response.json()
-              return res_json['candidates'][0]['content']['parts'][0]['text']
+              if response.status_code == 200:
+                  return response.json()['candidates'][0]['content']['parts'][0]['text']
+              return ""
 
-          # ၁။ ဖိုင်ရွေးချယ်ခြင်း
-          identify_prompt = f"Project Structure:\n{file_tree}\n\nTask: {issue_body}\nIdentify files. Return ONLY paths."
-          selected_files_text = call_gemini(identify_prompt).strip()
-          files_to_fix = [f.strip() for f in selected_files_text.split('\n') if f.strip()]
+          # ၂။ Roadmap Step: စီစဉ်ခြင်း (Planning)
+          plan_prompt = f"""
+          Project: {file_tree}
+          Task: {issue_body}
+          
+          You are a Senior Engineer. Before coding, create a step-by-step implementation plan.
+          Think about:
+          - Which files to modify?
+          - How to avoid breaking existing UI?
+          - How to ensure HTML and JS remain separate?
+          Return the plan in a few bullet points.
+          """
+          plan = call_gemini(plan_prompt)
+          print(f"Implementation Plan:\n{plan}")
 
-          # ၂။ တစ်ဖိုင်ချင်းစီကို တိကျစွာ ပြင်ဆင်ခြင်း
+          # ၃။ Roadmap Step: ပြင်ဆင်မည့်ဖိုင်များ ရွေးချယ်ခြင်း
+          identify_prompt = f"Plan: {plan}\nReturn ONLY file paths to be edited, one per line."
+          files_to_fix = [f.strip() for f in call_gemini(identify_prompt).split('\n') if f.strip()]
+
+          # ၄။ Roadmap Step: ကိုယ်တိုင်စစ်ဆေးပြီးမှ Code ရေးခြင်း (Draft & Review)
           for file_path in files_to_fix:
               file_path = file_path.replace('`', '').replace('./', '')
               original_content = ""
@@ -81,37 +86,47 @@ jobs:
               
               edit_prompt = f"""
               File: {file_path}
-              Current Content:
-              {original_content}
-
-              Task: {issue_body}
-
-              STRICT INSTRUCTIONS:
-              1. If editing HTML, DO NOT put raw CSS or JS inside <body> tags. Use separate files.
-              2. Ensure IDs used in JavaScript (e.g. fontSize) match exactly with the HTML.
-              3. DO NOT output any explanation text. ONLY the full code.
-              4. Remove any visible CSS variables from the HTML text content.
-              5. Ensure syntax is 100% correct.
-              """
+              Current Code: {original_content}
+              Plan: {plan}
               
+              Task: Write the full updated code. 
+              Rules: 
+              - NO raw CSS/JS inside HTML body text.
+              - Maintain all existing classes and IDs.
+              - If it's HTML, focus only on structure.
+              - If it's CSS, focus only on styles.
+              Return ONLY the code.
+              """
               updated_code = call_gemini(edit_prompt)
               
-              if updated_code:
-                  # Markdown Clean-up
-                  clean_code = re.sub(r'^```[a-z]*\n|```$', '', updated_code, flags=re.MULTILINE).strip()
-                  
-                  # Final Check: HTML ထဲမှာ CSS စာသားတွေ ကျန်မကျန် AI ကို ပြန်စစ်ခိုင်းခြင်း
-                  if file_path.endswith('.html'):
-                      verify_prompt = f"Does this HTML contain raw CSS text inside <body>? If yes, remove it and return clean HTML. Otherwise return as is.\n\nCode:\n{clean_code}"
-                      clean_code = re.sub(r'^```[a-z]*\n|```$', '', call_gemini(verify_prompt), flags=re.MULTILINE).strip()
+              # Self-Review Step
+              review_prompt = f"Does this code follow the plan and avoid UI breakage? If yes, return it. If no, fix it.\nCode:\n{updated_code}"
+              final_code = call_gemini(review_prompt)
+              
+              clean_code = re.sub(r'^```[a-z]*\n|```$', '', final_code, flags=re.MULTILINE).strip()
+              
+              # Safety Check: ဖိုင်တစ်ခုလုံး ပျောက်မသွားစေရန်
+              if len(original_content) > 50 and len(clean_code) < 20:
+                  continue
 
-                  os.makedirs(os.path.dirname(file_path) or '.', exist_ok=True)
-                  with open(file_path, 'w') as f:
-                      f.write(clean_code)
-                  print(f"Successfully updated: {file_path}")
+              os.makedirs(os.path.dirname(file_path) or '.', exist_ok=True)
+              with open(file_path, 'w') as f:
+                  f.write(clean_code)
 
-      - name: Commit & Push Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Create Pull Request (Roadmap Review Stage)
+        uses: peter-evans/create-pull-request@v5
         with:
-          commit_message: "AI-LEARN: Corrected code placement and logic for #${{ github.event.issue.number }}"
-          branch: main
+          token: ${{ secrets.PAT_TOKEN }}
+          commit-message: "AI-PRO: Proposed changes for #${{ github.event.issue.number }}"
+          branch: ai-engineering-branch
+          title: "AI Review Required: Fix for Issue #${{ github.event.issue.number }}"
+          body: |
+            ### 🛠 AI Implementation Plan
+            The AI has analyzed the issue and proposed changes in this branch.
+            Please review the code changes before merging to `main`.
+            
+            **Included Fixes:**
+            - UI Cleanup
+            - Logic Consistency
+            - Non-destructive updates
+          base: main
