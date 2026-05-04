@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+:root {
+    --gold: #eab308;
+    --sidebar-bg: #ffffff;
+    --chat-bg: #ffffff;
+    --base-font-size: 16px; /* Default for Medium */
+    --message-font-size: calc(var(--base-font-size) * 0.95); /* Adjusted from original 0.95rem */
+    --sidebar-item-font-size: calc(var(--base-font-size) * 0.9); /* New explicit size for sidebar items */
+}
+
+/* Font size adjustments based on user selection */
+body.font-small {
+    --base-font-size: 15px;
+}
+
+body.font-medium {
+    --base-font-size: 16px;
+}
+
+body.font-large {
+    --base-font-size: 17px;
+}
+
+body.dark-mode {
+    --sidebar-bg: #111827;
+    --chat-bg: #0f172a;
+    background-color: var(--chat-bg);
+    color: #f3f4f6;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    -webkit-tap-highlight-color: transparent;
+    font-size: var(--base-font-size); /* Apply base font size to body */
+}
+
+/* Draggable Button */
+#menuToggleBtn {
+    position: fixed; top: 20px; left: 20px;
+    width: 54px; height: 54px; background: var(--gold);
+    color: white; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center;
+    cursor: grab; z-index: 2001; border: none; touch-action: none;
+    box-shadow: 0 4px 20px rgba(234, 179, 8, 0.4);
+}
+
+/* Sidebar Drawer */
+.floating-sidebar {
+    position: fixed; left: -300px; top: 0; bottom: 0;
+    width: 280px; background: var(--sidebar-bg);
+    border-right: 1px solid rgba(0,0,0,0.08);
+    display: flex; flex-direction: column; padding: 20px 12px;
+    z-index: 2002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar-open .floating-sidebar { left: 0; }
+
+#sidebarOverlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; z-index: 2000; backdrop-filter: blur(2px);
+}
+.sidebar-open #sidebarOverlay { display: block; }
+
+/* View Containers */
+.view-container {
+    display: none; height: 100vh; width: 100vw;
+    position: absolute; top: 0; left: 0;
+}
+.view-active { display: flex !important; }
+
+/* Message Bubbles */
+.message-bubble {
+    padding: 14px 18px; border-radius: 20px; max-width: 88%;
+    font-size: var(--message-font-size); /* Use CSS variable */
+    line-height: 1.5; word-wrap: break-word;
+}
+.justify-end .message-bubble { background: var(--gold); color: white; border-bottom-right-radius: 4px; }
+.justify-start .message-bubble { background: #f3f4f6; color: #1f2937; border-bottom-left-radius: 4px; }
+body.dark-mode .justify-start .message-bubble { background: #1e293b; color: #f3f4f6; }
+
+/* Thinking Animation */
+.dot { display: inline-block; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; margin-right: 3px; animation: bounce 0.6s infinite; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+/* Sidebar Items */
+.sidebar-item {
+    height: 52px; display: flex; align-items: center;
+    border-radius: 14px; color: #6b7280; cursor: pointer;
+    margin-bottom: 4px; padding: 0 16px; transition: 0.2s;
+    font-size: var(--sidebar-item-font-size); /* Use CSS variable */
+}
+.active-tab, .sidebar-item:hover { background: #f8f9fa; color: var(--gold); }
+body.dark-mode .sidebar-item:hover, body.dark-mode .active-tab { background: #1f2937; }
+
+/* Responsive Scrollbar */
+.chat-scroll::-webkit-scrollbar { width: 4px; }
+.chat-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+
+/* Mobile Height Fix */
+@media (max-width: 768px) {
+    .view-container { height: 100%; height: -webkit-fill-available; }
+}
