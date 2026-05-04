@@ -12,7 +12,8 @@
 }
 
 /* Font size adjustments based on user selection */
-body.font-small {
+/* Removed specific font-size overrides for body classes to allow slider to control --base-font-size directly via :root */
+/* body.font-small {
     --base-font-size: 15px;
 }
 
@@ -22,7 +23,7 @@ body.font-medium {
 
 body.font-large {
     --base-font-size: 17px;
-}
+} */
 
 body.dark-mode {
     --sidebar-bg: #111827;
