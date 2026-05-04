@@ -1,10 +1,14 @@
+/* * Khittara AI Hub - Main Stylesheet
+ */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
 :root {
     --gold: #eab308;
     --sidebar-bg: #ffffff;
     --chat-bg: #ffffff;
-    /* Default values */
+    
+    /* Default Values (Slider ကနေ တစ်ဆင့် ပြောင်းလဲနိုင်သည်) */
     --base-font-size: 16px; 
     --base-icon-size: 24px;
     --base-logo-scale: 1.0;
@@ -13,6 +17,7 @@
     --sidebar-item-font-size: calc(var(--base-font-size) * 0.9);
 }
 
+/* Dark Mode Colors */
 body.dark-mode {
     --sidebar-bg: #111827;
     --chat-bg: #0f172a;
@@ -29,8 +34,11 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* Sidebar ID Selector ကို သုံးပြီး transition ထည့်ထားသည် */
+/* --- Sidebar Logic --- */
+
+/* Sidebar smooth transition */
 #mainSidebar {
+    background-color: var(--sidebar-bg);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -39,65 +47,7 @@ body {
     font-size: var(--base-icon-size);
 }
 
-/* Logo Scaling */
-.logo-box {
-    transform: scale(var(--base-logo-scale));
-    transition: transform 0.2s;
-}
-.logo-text {
-    font-size: calc(20px * var(--base-logo-scale));
-}
-
-/* Draggable Button */
-#menuToggleBtn {
-    position: fixed; 
-    top: 20px; 
-    left: 20px;
-    width: 54px; 
-    height: 54px; 
-    background: var(--gold);
-    color: white; 
-    border-radius: 50%; 
-    display: flex;
-    align-items: center; 
-    justify-content: center;
-    cursor: grab; 
-    z-index: 2001; 
-    border: none; 
-    touch-action: none;
-    box-shadow: 0 4px 20px rgba(234, 179, 8, 0.4);
-}
-
-/* Sidebar Overlay */
-#sidebarOverlay {
-    position: fixed; 
-    inset: 0; 
-    background: rgba(0,0,0,0.4);
-    z-index: 2000; 
-    backdrop-filter: blur(2px);
-}
-
-/* View Containers */
-.view-container {
-    height: 100vh; 
-    width: 100vw;
-    transition: opacity 0.3s;
-}
-
-/* Message Bubbles */
-.message-bubble {
-    padding: 14px 18px; 
-    border-radius: 20px; 
-    max-width: 88%;
-    font-size: var(--message-font-size);
-    line-height: 1.5; 
-    word-wrap: break-word;
-}
-.justify-end .message-bubble { background: var(--gold); color: white; border-bottom-right-radius: 4px; }
-.justify-start .message-bubble { background: #f3f4f6; color: #1f2937; border-bottom-left-radius: 4px; }
-body.dark-mode .justify-start .message-bubble { background: #1e293b; color: #f3f4f6; }
-
-/* Sidebar Items */
+/* Sidebar Items Styling */
 .sidebar-item {
     min-height: 52px; 
     display: flex; 
@@ -110,10 +60,109 @@ body.dark-mode .justify-start .message-bubble { background: #1e293b; color: #f3f
     transition: 0.2s;
     font-size: var(--sidebar-item-font-size);
 }
-.active-tab, .sidebar-item:hover { background: #f8f9fa; color: var(--gold); }
-body.dark-mode .sidebar-item:hover, body.dark-mode .active-tab { background: #1f2937; }
 
-/* Mobile Height Fix */
+.active-tab, .sidebar-item:hover { 
+    background: #f8f9fa; 
+    color: var(--gold); 
+}
+
+body.dark-mode .sidebar-item:hover, 
+body.dark-mode .active-tab { 
+    background: #1f2937; 
+}
+
+/* --- UI Components --- */
+
+/* Logo Scaling */
+.logo-box {
+    transform: scale(var(--base-logo-scale));
+    transition: transform 0.2s;
+}
+.logo-text {
+    font-size: calc(20px * var(--base-logo-scale));
+}
+
+/* Menu Toggle Button (Floating) */
+#menuToggleBtn {
+    position: fixed; 
+    top: 20px; 
+    left: 20px;
+    width: 54px; 
+    height: 54px; 
+    background: var(--gold);
+    color: white; 
+    border-radius: 50%; 
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    cursor: pointer; 
+    z-index: 9999; 
+    border: none;
+    box-shadow: 0 4px 20px rgba(234, 179, 8, 0.4);
+    transition: transform 0.2s active;
+}
+
+#menuToggleBtn:active {
+    transform: scale(0.9);
+}
+
+/* Sidebar Overlay Fix */
+#sidebarOverlay {
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0,0,0,0.4);
+    z-index: 10000; 
+    backdrop-filter: blur(2px);
+    display: none; /* စဖွင့်ချင်း ဖျက်ထားမည် */
+}
+
+/* JS မှ block class ထည့်လိုက်လျှင် ပေါ်လာစေရန် */
+#sidebarOverlay.block {
+    display: block !important;
+}
+
+/* Message Bubbles */
+.message-bubble {
+    padding: 14px 18px; 
+    border-radius: 20px; 
+    max-width: 88%;
+    font-size: var(--message-font-size);
+    line-height: 1.5; 
+    word-wrap: break-word;
+}
+
+.justify-end .message-bubble { 
+    background: var(--gold); 
+    color: white; 
+    border-bottom-right-radius: 4px; 
+}
+
+.justify-start .message-bubble { 
+    background: #f3f4f6; 
+    color: #1f2937; 
+    border-bottom-left-radius: 4px; 
+}
+
+body.dark-mode .justify-start .message-bubble { 
+    background: #1e293b; 
+    color: #f3f4f6; 
+}
+
+/* --- Utility Classes --- */
+
+.chat-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+/* Mobile Viewport Fix */
 @media (max-width: 768px) {
-    .view-container { height: 100vh; height: -webkit-fill-available; }
+    .view-container { 
+        height: 100vh; 
+        height: -webkit-fill-available; 
+    }
 }
