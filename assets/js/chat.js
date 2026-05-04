@@ -1,58 +1,32 @@
 let currentChatId = null;
 
-// Draggable Input Logic (Keep as before)
-const dragArea = document.getElementById('draggableInput');
-const dragHandle = document.getElementById('dragHandle');
-let isDragging = false, startY, initialBottom;
-
-if(dragHandle) {
-    dragHandle.addEventListener('mousedown', startDrag);
-    dragHandle.addEventListener('touchstart', startDrag, { passive: false });
+// Auto-scroll to the latest message
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    setTimeout(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 100);
 }
 
-function startDrag(e) {
-    isDragging = true;
-    startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-    initialBottom = parseInt(window.getComputedStyle(dragArea).bottom);
-    document.addEventListener('mousemove', onDrag);
-    document.addEventListener('touchmove', onDrag, { passive: false });
-    document.addEventListener('mouseup', stopDrag);
-    document.addEventListener('touchend', stopDrag);
-}
-
-function onDrag(e) {
-    if (!isDragging) return;
-    if (e.type === 'touchmove') e.preventDefault();
-    const currentY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-    const deltaY = startY - currentY;
-    dragArea.style.bottom = `${Math.max(20, Math.min(window.innerHeight - 150, initialBottom + deltaY))}px`;
-}
-function stopDrag() { isDragging = false; }
-
-/**
- * Sidebar Dynamic Switcher
- * Home ရောက်ရင် History ဖျောက်မယ်၊ Chat ရောက်ရင် ပြမယ်။
- */
-const originalSwitchView = window.switchView;
+// Switch between Home and Chat
 window.switchView = function(viewId) {
     const historySection = document.getElementById('historySection');
+    document.querySelectorAll('.view-container').forEach(v => v.classList.add('hidden'));
+    document.getElementById(viewId + 'View').classList.remove('hidden');
+    
     if (viewId === 'home') {
         historySection.classList.add('hidden');
     } else {
         historySection.classList.remove('hidden');
         window.renderHistory();
-    }
-    // Call original navigation function
-    if(typeof window.navToView === 'function') window.navToView(viewId); 
-    else {
-        document.querySelectorAll('.view-container').forEach(v => v.classList.add('hidden'));
-        document.getElementById(viewId + 'View').classList.remove('hidden');
+        scrollToBottom();
     }
 };
 
 window.newChat = function() {
     currentChatId = Date.now().toString();
-    document.getElementById('chatMessages').innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-10"><i class="fas fa-comment-dots text-7xl mb-4"></i><p class="font-bold">Chat Started</p></div>`;
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-10 py-20"><i class="fas fa-comment-dots text-7xl mb-4"></i><p class="font-bold text-xl">Chat Started</p></div>`;
     window.switchView('chat');
 };
 
@@ -60,13 +34,16 @@ window.sendMessage = function(inputId) {
     const input = document.getElementById(inputId);
     const val = input.value.trim();
     if (!val) return;
+    
     if (!currentChatId) currentChatId = Date.now().toString();
     if (inputId === 'initialInput') {
         window.switchView('chat');
         document.getElementById('chatMessages').innerHTML = '';
     }
+
     appendMessageUI('user', val);
-    input.value = ''; input.style.height = '40px'; 
+    input.value = ''; 
+    input.style.height = '40px'; 
     processAI(val);
 };
 
@@ -83,11 +60,12 @@ async function processAI(prompt) {
 }
 
 function appendMessageUI(role, text) {
-    const container = document.getElementById('chatMessages');
+    const chatMessages = document.getElementById('chatMessages');
     const div = document.createElement('div');
-    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-5 px-1`;
-    div.innerHTML = `<div class="message-bubble shadow-sm ${role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}">${role === 'ai' ? marked.parse(text) : text}</div>`;
-    container.appendChild(div);
+    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-6 px-1`;
+    div.innerHTML = `<div class="message-bubble ${role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}">${role === 'ai' ? marked.parse(text) : text}</div>`;
+    chatMessages.appendChild(div);
+    
     scrollToBottom();
     div.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
     if(role === 'user') saveToHistory(role, text);
@@ -97,8 +75,8 @@ function showThinking() {
     if(document.getElementById('thinkingIndicator')) return;
     const div = document.createElement('div');
     div.id = 'thinkingIndicator';
-    div.className = 'flex justify-start mb-5 px-1';
-    div.innerHTML = `<div class="bg-gray-100 dark:bg-zinc-800 p-3 rounded-2xl flex space-x-1"><div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div><div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div><div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.4s"></div></div>`;
+    div.className = 'flex justify-start mb-6 px-1';
+    div.innerHTML = `<div class="bg-gray-100 dark:bg-zinc-800 p-4 rounded-2xl flex space-x-1"><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.4s"></div></div>`;
     document.getElementById('chatMessages').appendChild(div);
     scrollToBottom();
 }
@@ -139,16 +117,15 @@ window.deleteChat = function(e, id) {
 window.loadChat = function(id) {
     const history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
     if(!history[id]) return;
-    currentChatId = id; window.switchView('chat'); document.getElementById('chatMessages').innerHTML = '';
+    currentChatId = id; window.switchView('chat'); 
+    document.getElementById('chatMessages').innerHTML = '';
     history[id].messages.forEach(m => appendMessageUI(m.role, m.text));
 };
 
-function scrollToBottom() { const container = document.getElementById('chatMessages'); container.scrollTop = container.scrollHeight; }
-
 document.addEventListener('DOMContentLoaded', () => {
     window.renderHistory();
-    // Initial hide if on home
-    if(document.getElementById('homeView').classList.contains('view-active') || !document.getElementById('homeView').classList.contains('hidden')) {
+    const homeView = document.getElementById('homeView');
+    if(homeView && !homeView.classList.contains('hidden')) {
         document.getElementById('historySection').classList.add('hidden');
     }
 });
