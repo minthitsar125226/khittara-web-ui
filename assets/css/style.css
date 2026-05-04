@@ -4,15 +4,10 @@
     --gold: #eab308;
     --sidebar-bg: #ffffff;
     --chat-bg: #ffffff;
-    --base-font-size: 16px; 
-    --base-icon-size: 24px;
-    --base-logo-scale: 1.0;
-    --message-font-size: calc(var(--base-font-size) * 0.95);
-    --sidebar-item-font-size: calc(var(--base-font-size) * 0.9);
 }
 
 body.dark-mode {
-    --sidebar-bg: #09090b; /* zinc-950 */
+    --sidebar-bg: #09090b;
     --chat-bg: #09090b;
     background-color: var(--chat-bg);
     color: #f3f4f6;
@@ -21,79 +16,76 @@ body.dark-mode {
 body {
     font-family: 'Inter', sans-serif;
     margin: 0;
-    -webkit-tap-highlight-color: transparent;
-    font-size: var(--base-font-size);
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    width: 100vw;
+    overflow: hidden;
     background-color: var(--chat-bg);
-    transition: background-color 0.3s, color 0.3s;
 }
 
-/* Sidebar Styling */
+/* Sidebar & Overlay */
 #mainSidebar {
     background-color: var(--sidebar-bg);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s ease;
 }
 
-.sidebar-item {
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    border-radius: 12px;
-    color: #71717a;
-    cursor: pointer;
-    transition: 0.2s;
-    font-size: var(--sidebar-item-font-size);
-}
-
-.sidebar-item:hover {
-    background: #f4f4f5;
-    color: var(--gold);
-}
-
-body.dark-mode .sidebar-item:hover {
-    background: #18181b;
-}
-
-.sidebar-item i {
-    font-size: var(--base-icon-size);
-    width: 24px;
-    text-align: center;
-}
-
-/* UI Elements Scaling */
-.logo-box { transform: scale(var(--base-logo-scale)); transition: transform 0.2s; }
-.logo-text { font-size: calc(20px * var(--base-logo-scale)); }
-
-/* Floating Menu Button */
-#menuToggleBtn {
-    position: fixed; top: 20px; left: 20px;
-    width: 50px; height: 50px; background: var(--gold);
-    color: white; border-radius: 15px; display: flex;
-    align-items: center; justify-content: center;
-    cursor: pointer; z-index: 9999; border: none;
-    box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
-}
-
-/* Overlay Fix */
-#sidebarOverlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-    z-index: 10000; backdrop-filter: blur(2px);
-    display: none;
-}
 #sidebarOverlay.block { display: block !important; }
 
 /* View Management */
-.view-container { display: none; height: 100vh; width: 100vw; }
-.view-active { display: flex !important; }
+.view-container {
+    height: 100%;
+    width: 100%;
+}
+
+/* Menu Toggle Button */
+#menuToggleBtn {
+    position: fixed; 
+    top: 15px; 
+    left: 15px;
+    width: 45px; 
+    height: 45px; 
+    background: var(--gold);
+    color: white; 
+    border-radius: 12px; 
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    z-index: 50;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
 
 /* Message Bubbles */
 .message-bubble {
-    padding: 12px 16px; border-radius: 20px; max-width: 85%;
-    font-size: var(--message-font-size); line-height: 1.5;
+    padding: 12px 16px; 
+    border-radius: 18px; 
+    max-width: 85%;
+    font-size: 15px;
+    line-height: 1.5;
+    word-wrap: break-word;
 }
 .justify-end .message-bubble { background: var(--gold); color: white; border-bottom-right-radius: 4px; }
 .justify-start .message-bubble { background: #f4f4f5; color: #18181b; border-bottom-left-radius: 4px; }
 body.dark-mode .justify-start .message-bubble { background: #18181b; color: #f4f4f5; }
 
-/* Scrollbar */
+/* Chat History Delete Button */
+.group:hover .truncate { max-width: 80%; }
+
+/* Scrollbar Customization */
 .chat-scroll::-webkit-scrollbar { width: 4px; }
-.chat-scroll::-webkit-scrollbar-thumb { background: rgba(161, 161, 170, 0.3); border-radius: 10px; }
+.chat-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+
+/* Mobile Specific Fixes */
+@media (max-width: 768px) {
+    #chatMessages {
+        padding: 15px;
+    }
+    .message-bubble {
+        max-width: 90%;
+        font-size: 14px;
+    }
+    /* Keyboard ပွင့်လာရင် input area ကို မြင်နေရအောင် */
+    .input-area {
+        padding: 10px !important;
+        padding-bottom: env(safe-area-inset-bottom) !important;
+    }
+}
