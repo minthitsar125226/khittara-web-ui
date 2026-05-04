@@ -1,4 +1,4 @@
-name: AI Auto-Coder (Advanced)
+name: AI Auto-Coder (Fixed Model)
 on:
   issues:
     types: [opened, edited]
@@ -37,7 +37,7 @@ jobs:
           api_key = os.getenv("GEMINI_API_KEY")
           issue_body = os.getenv("ISSUE_BODY")
 
-          # ၁။ Repo Structure တစ်ခုလုံးကို ဆွဲထုတ်ခြင်း
+          # ၁။ Repo Structure ဆွဲထုတ်ခြင်း
           repo_files = []
           for root, dirs, files in os.walk("."):
               for file in files:
@@ -48,9 +48,9 @@ jobs:
           file_tree = "\n".join(repo_files)
 
           def call_gemini(prompt):
-              # နောက်ဆုံး Update ဖြစ်သော Model ခေါ်ဆိုပုံ
-              model = "gemini-2.0-flash" 
-              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+              # Pydroid 3 ကရတဲ့ List ထဲက Model နာမည် (gemini-2.5-flash ကို သုံးထားသည်)
+              model_name = "gemini-2.5-flash" 
+              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
               
               payload = {
                   "contents": [{ 
@@ -59,71 +59,44 @@ jobs:
                   }]
               }
               
-              try:
-                  response = requests.post(url, json=payload)
-                  res_json = response.json()
-                  return res_json['candidates'][0]['content']['parts'][0]['text']
-              except Exception as e:
-                  print(f"Error calling API: {e}")
+              response = requests.post(url, json=payload)
+              if response.status_code != 200:
+                  print(f"Error from API: {response.status_code} - {response.text}")
                   return ""
+              
+              res_json = response.json()
+              return res_json['candidates'][0]['content']['parts'][0]['text']
 
-          # ၂။ AI ကို Project Structure ပြပြီး ဘယ်ဖိုင်တွေပြင်ရမလဲ ရွေးခိုင်းခြင်း
-          identify_prompt = f"""
-          You are a Senior Full-Stack Developer. 
-          Project Structure:
-          {file_tree}
-
-          User Request: {issue_body}
-
-          Task: Identify ALL files that need to be modified or created.
-          Rules:
-          1. Return ONLY the file paths, one per line.
-          2. No backticks, no explanations.
-          """
+          # ၂။ ပြင်ရမည့်ဖိုင်များ ရွေးချယ်ခြင်း
+          identify_prompt = f"Project Structure:\n{file_tree}\n\nTask: {issue_body}\nIdentify files to edit. Return ONLY file paths, one per line."
           
           selected_files_text = call_gemini(identify_prompt).strip()
+          if not selected_files_text:
+              print("No files identified or API error.")
+              exit(0)
+              
           files_to_fix = [f.strip() for f in selected_files_text.split('\n') if f.strip()]
-          
-          print(f"AI selected these files: {files_to_fix}")
 
-          # ၃။ ဖိုင်များကို တစ်ခုချင်းစီ လိုက်ပြင်ခြင်း (UI မပျက်အောင် စည်းကမ်းချက်များပါဝင်သည်)
+          # ၃။ Code ပြင်ဆင်ခြင်း
           for file_path in files_to_fix:
               file_path = file_path.replace('`', '').replace('./', '')
-              
               original_content = ""
               if os.path.exists(file_path):
                   with open(file_path, 'r') as f:
                       original_content = f.read()
               
-              edit_prompt = f"""
-              File Path: {file_path}
-              Current Content:
-              {original_content if original_content else "[New File]"}
-
-              Instruction: {issue_body}
-
-              Strict Rules for Code Generation:
-              1. DO NOT delete or overwrite existing UI layouts, headers, or containers.
-              2. ONLY add or modify the specific parts requested.
-              3. If you use CSS variables, ensure they are defined in :root.
-              4. Return ONLY the full updated code for this file. 
-              5. NO markdown formatting, NO backticks (```), NO "Here is the code".
-              """
-              
+              edit_prompt = f"File: {file_path}\nContent:\n{original_content}\n\nTask: {issue_body}\nReturn ONLY updated code. No markdown, no text."
               updated_code = call_gemini(edit_prompt)
               
-              # AI က Markdown ပေးလာခဲ့လျှင် Clean လုပ်ပေးခြင်း
-              clean_code = re.sub(r'^```[a-z]*\n|```$', '', updated_code, flags=re.MULTILINE).strip()
-
-              # Folder မရှိပါက ဆောက်ပေးခြင်း
-              os.makedirs(os.path.dirname(file_path) or '.', exist_ok=True)
-              
-              with open(file_path, 'w') as f:
-                  f.write(clean_code)
-              print(f"Updated: {file_path}")
+              if updated_code:
+                  clean_code = re.sub(r'^```[a-z]*\n|```$', '', updated_code, flags=re.MULTILINE).strip()
+                  os.makedirs(os.path.dirname(file_path) or '.', exist_ok=True)
+                  with open(file_path, 'w') as f:
+                      f.write(clean_code)
+                  print(f"Updated: {file_path}")
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "AI-FIX: Automated updates for Issue #${{ github.event.issue.number }}"
+          commit_message: "AI: Automated updates for Issue #${{ github.event.issue.number }}"
           branch: main
