@@ -1,11 +1,5 @@
-:root {
-  --base-font-size: 16px;
-  --base-icon-size: 24px;
-  --base-logo-size: 150px;
-}
-body { font-size: var(--base-font-size); }
-.nav-icon { width: var(--base-icon-size); height: var(--base-icon-size); }
-.site-logo { width: var(--base-logo-size); height: auto; }
+File: index.html
+Content:
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,6 +151,472 @@ body { font-size: var(--base-font-size); }
     <script src="assets/js/chat.js"></script>
 </body>
 </html>
+File: assets/css/style.css
+Content:
+:root {
+  --base-font-size: 16px;
+  --base-icon-size: 24px;
+  --base-logo-size: 150px;
+}
+body { font-size: var(--base-font-size); }
+.nav-icon { width: var(--base-icon-size); height: var(--base-icon-size); }
+.site-logo { width: var(--base-logo-size); height: auto; }
+/* General Styles */
+html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: #333; /* Dark gray text */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Sidebar */
+.floating-sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px; /* Initially hidden */
+    width: 280px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
+    transition: left 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+}
+.floating-sidebar.active {
+    left: 0;
+}
+#sidebarOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+#sidebarOverlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    cursor: pointer;
+    color: #666;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.sidebar-item:hover {
+    background-color: #f5f5f5;
+    color: #333;
+}
+.sidebar-item.active-tab {
+    background-color: #fff6e6; /* light yellow */
+    color: #fbbd00; /* yellow-500 */
+    border-right: 4px solid #fbbd00;
+}
+.sidebar-item i {
+    margin-right: 15px;
+    font-size: 1.2em;
+}
+.sidebar-label {
+    flex-grow: 1;
+}
+
+/* Chat History */
+.chat-history-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    margin: 0 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #555;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.chat-history-item:hover {
+    background-color: #f0f0f0;
+}
+.chat-history-item.active-chat {
+    background-color: #fff6e6; /* light yellow */
+    color: #fbbd00; /* yellow-500 */
+    font-weight: 600;
+}
+.chat-history-item i {
+    margin-right: 10px;
+    font-size: 1em;
+    width: 1.2em; /* Ensure consistent icon width */
+    text-align: center;
+}
+.chat-history-item span {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.chat-history-item .delete-chat-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: #aaa;
+}
+.chat-history-item:hover .delete-chat-btn,
+.chat-history-item.active-chat .delete-chat-btn {
+    opacity: 1;
+}
+.chat-history-item .delete-chat-btn:hover {
+    color: #ef4444; /* red-500 */
+}
+
+/* Main Content */
+main {
+    transition: margin-left 0.3s ease-in-out;
+    /* For desktop, if sidebar is always visible: */
+    /* margin-left: 280px; */
+}
+
+/* View Containers */
+.view-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none; /* Hidden by default */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.view-container.view-active {
+    display: flex;
+    opacity: 1;
+    z-index: 1; /* Ensure active view is on top */
+}
+
+/* Chat View */
+#chatMessages {
+    display: flex;
+    flex-direction: column;
+}
+.chat-message {
+    display: flex;
+    margin-bottom: 15px;
+}
+.chat-message.user {
+    justify-content: flex-end;
+}
+.chat-message.ai {
+    justify-content: flex-start;
+}
+.chat-bubble {
+    max-width: 80%;
+    padding: 12px 18px;
+    border-radius: 25px;
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+.chat-message.user .chat-bubble {
+    background-color: #fbbd00; /* yellow-500 */
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+.chat-message.ai .chat-bubble {
+    background-color: #f0f0f0; /* light gray */
+    color: #333;
+    border-bottom-left-radius: 5px;
+}
+.chat-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9em;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+.chat-message.user .chat-avatar {
+    margin-left: 10px;
+    background-color: #eee;
+    color: #888;
+}
+.chat-message.ai .chat-avatar {
+    margin-right: 10px;
+    background-color: #fbbd00;
+    color: white;
+}
+
+/* Code Highlight Overrides */
+pre {
+    background-color: #2d2d2d !important; /* Dark background for code blocks */
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    overflow-x: auto;
+}
+code {
+    font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #abb2bf; /* Light gray code text */
+}
+
+/* Scrollbar Styles */
+.chat-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+.chat-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Menu Toggle Button */
+#menuToggleBtn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10001;
+    background-color: #fbbd00;
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4em;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s ease-out;
+}
+#menuToggleBtn:hover {
+    transform: scale(1.05);
+}
+
+/* Dark Mode Specific Styles */
+body.dark {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+body.dark .floating-sidebar {
+    background-color: #1f1f1f;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.4);
+}
+body.dark .sidebar-item {
+    color: #b0b0b0;
+}
+body.dark .sidebar-item:hover {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+}
+body.dark .sidebar-item.active-tab {
+    background-color: #332d1f; /* Darker yellow background */
+    color: #fbbd00; /* yellow-500 */
+    border-right-color: #fbbd00;
+}
+body.dark .chat-history-item {
+    color: #b0b0b0;
+}
+body.dark .chat-history-item:hover {
+    background-color: #2a2a2a;
+}
+body.dark .chat-history-item.active-chat {
+    background-color: #332d1f;
+    color: #fbbd00;
+}
+body.dark .chat-message.ai .chat-bubble {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+}
+body.dark .chat-message.user .chat-avatar {
+    background-color: #333;
+    color: #bbb;
+}
+body.dark #chatInput,
+body.dark #initialInput {
+    color: #e0e0e0;
+}
+body.dark #settingsModal .bg-white {
+    background-color: #1f1f1f;
+    color: #e0e0e0;
+}
+body.dark #settingsModal input,
+body.dark #settingsModal select {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+}
+body.dark #settingsModal .text-gray-400 {
+    color: #888;
+}
+body.dark .border-gray-100 {
+    border-color: #2a2a2a;
+}
+body.dark .bg-gray-50 {
+    background-color: #2a2a2a;
+}
+body.dark .bg-gray-300 {
+    background-color: #444;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    .floating-sidebar {
+        left: 0; /* Always visible on desktop */
+        box-shadow: none; /* No shadow */
+        border-right: 1px solid #e0e0e0; /* Subtle border */
+    }
+    body.dark .floating-sidebar {
+        border-right: 1px solid #2a2a2a;
+    }
+    #sidebarOverlay {
+        display: none; /* No overlay needed */
+    }
+    #menuToggleBtn {
+        display: none; /* No toggle button needed */
+    }
+    main {
+        margin-left: 280px; /* Shift content to the right */
+    }
+}
+
+File: assets/js/navigation.js
+Content:
+// Toggle Sidebar
+window.toggleSidebar = function() {
+    const sidebar = document.getElementById('mainSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+// Switch Views
+window.switchView = function(viewId) {
+    const views = document.querySelectorAll('.view-container');
+    views.forEach(view => {
+        view.classList.remove('view-active');
+    });
+    document.getElementById(viewId + 'View').classList.add('view-active');
+
+    // Update active class for sidebar items
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => item.classList.remove('active-tab'));
+    
+    // Find the parent of the clicked item to apply active-tab
+    const clickedItem = event.target.closest('.sidebar-item');
+    if (clickedItem) {
+        clickedItem.classList.add('active-tab');
+    }
+
+    // Hide sidebar on view switch if on mobile
+    if (window.innerWidth < 768) {
+        window.toggleSidebar();
+    }
+}
+
+// Toggle Settings Modal
+window.toggleSettings = function() {
+    const settingsModal = document.getElementById('settingsModal');
+    settingsModal.classList.toggle('hidden');
+    settingsModal.classList.toggle('flex');
+    if (settingsModal.classList.contains('flex')) {
+        loadSettings();
+    }
+}
+
+// Load Settings for Modal
+function loadSettings() {
+    document.getElementById('apiKeyInput').value = localStorage.getItem('geminiApiKey') || '';
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    document.getElementById('darkModeLabel').textContent = isDarkMode ? 'Dark Mode (On)' : 'Dark Mode (Off)';
+    document.getElementById('langSelect').value = localStorage.getItem('language') || 'en';
+    
+    const fontSizeVal = localStorage.getItem('fontSizeSlider') || '16';
+    document.getElementById('fontSizeSlider').value = fontSizeVal;
+}
+
+// Save Settings from Modal
+window.saveSettings = function() {
+    localStorage.setItem('geminiApiKey', document.getElementById('apiKeyInput').value);
+    // Dark mode handled by toggleTheme, so no direct save here
+    localStorage.setItem('language', document.getElementById('langSelect').value);
+    localStorage.setItem('fontSizeSlider', document.getElementById('fontSizeSlider').value); // Save font size for modal
+    applyFontSizeFromModal(document.getElementById('fontSizeSlider').value);
+    window.toggleSettings(); // Close modal
+    alert('Settings saved!');
+}
+
+// Apply font size from modal slider to CSS variable
+function applyFontSizeFromModal(size) {
+    document.documentElement.style.setProperty('--base-font-size', size + 'px');
+}
+
+// Event listener for font size slider in modal
+document.addEventListener('DOMContentLoaded', () => {
+    const fontSizeModalSlider = document.getElementById('fontSizeSlider');
+    if (fontSizeModalSlider) {
+        fontSizeModalSlider.addEventListener('input', (e) => {
+            applyFontSizeFromModal(e.target.value);
+        });
+        // Apply saved value on load
+        const savedFontSize = localStorage.getItem('fontSizeSlider');
+        if (savedFontSize) {
+            applyFontSizeFromModal(savedFontSize);
+            fontSizeModalSlider.value = savedFontSize;
+        }
+    }
+});
+
+
+// Theme Toggle
+window.toggleTheme = function() {
+    const isDarkMode = document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDarkMode);
+    document.getElementById('darkModeLabel').textContent = isDarkMode ? 'Dark Mode (On)' : 'Dark Mode (Off)';
+}
+
+// Apply theme on load
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+    }
+    // Also apply the theme for the modal label immediately if it's open
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    const darkModeLabel = document.getElementById('darkModeLabel');
+    if (darkModeLabel) {
+        darkModeLabel.textContent = isDarkMode ? 'Dark Mode (On)' : 'Dark Mode (Off)';
+    }
+});
+
+// Initial view load
+document.addEventListener('DOMContentLoaded', () => {
+    window.switchView('home');
+    // Ensure sidebar is hidden on mobile on load
+    if (window.innerWidth < 768) {
+        const sidebar = document.getElementById('mainSidebar');
+        sidebar.classList.remove('active');
+    }
+});
+
+// Logic for sidebar display settings sliders (Font Size, Icon Size, Logo Size)
 const settings = [
   { id: 'fontSize', var: '--base-font-size', unit: 'px' },
   { id: 'iconSize', var: '--base-icon-size', unit: 'px' },

@@ -1,7 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
-:root { --base-font-size: 16px; }
-
 :root {
     --gold: #eab308;
     --sidebar-bg: #ffffff;
@@ -9,6 +7,8 @@
     --base-font-size: 16px; /* Default for Medium */
     --message-font-size: calc(var(--base-font-size) * 0.95); /* Adjusted from original 0.95rem */
     --sidebar-item-font-size: calc(var(--base-font-size) * 0.9); /* New explicit size for sidebar items */
+    --base-icon-size: 24px; /* Default icon size, assuming it's controlled by a slider */
+    --logo-size: 48px;     /* Default logo size, assuming it's controlled by a slider */
 }
 
 /* Font size adjustments based on user selection */
