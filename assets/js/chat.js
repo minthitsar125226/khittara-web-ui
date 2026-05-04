@@ -1,17 +1,12 @@
-/**
- * Chat & History Management
- */
-
 let currentChatId = null;
 
 window.newChat = function() {
     currentChatId = Date.now().toString();
     document.getElementById('chatMessages').innerHTML = `
         <div class="flex flex-col items-center justify-center h-full opacity-20 select-none">
-            <i class="fas fa-robot text-6xl mb-4"></i>
-            <p class="font-bold">Khittara AI Hub</p>
-        </div>
-    `;
+            <i class="fas fa-robot text-5xl mb-3"></i>
+            <p class="text-sm font-bold">How can I help you?</p>
+        </div>`;
     window.switchView('chat');
 };
 
@@ -28,8 +23,17 @@ window.sendMessage = function(inputId) {
 
     appendMessageUI('user', val);
     input.value = '';
+    input.style.height = '38px'; // Reset textarea height
     processAI(val);
 };
+
+// Handle Enter Key in Textarea
+document.addEventListener('keydown', (e) => {
+    if (e.target.id === 'chatInput' && e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        window.sendMessage('chatInput');
+    }
+});
 
 async function processAI(prompt) {
     showThinking();
@@ -37,25 +41,18 @@ async function processAI(prompt) {
         const response = await AI_CONFIG.fetchAIResponse(prompt);
         hideThinking();
         appendMessageUI('ai', response);
-        saveToHistory('ai', response);
     } catch (e) {
         hideThinking();
-        appendMessageUI('ai', "API Error. Please check your key in Settings.");
+        appendMessageUI('ai', "API Error. Please check your settings.");
     }
 }
 
 function appendMessageUI(role, text) {
     const container = document.getElementById('chatMessages');
     const div = document.createElement('div');
-    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-6 px-2`;
-    
+    div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-5 px-1`;
     const content = role === 'ai' ? marked.parse(text) : text;
-    div.innerHTML = `
-        <div class="message-bubble ${role === 'user' ? 'bg-yellow-500 text-white shadow-lg' : 'bg-gray-100 dark:bg-zinc-800 shadow-sm'}">
-            ${content}
-        </div>
-    `;
-    
+    div.innerHTML = `<div class="message-bubble shadow-sm ${role === 'user' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}">${content}</div>`;
     container.appendChild(div);
     scrollToBottom();
     div.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
@@ -67,11 +64,11 @@ function showThinking() {
     const container = document.getElementById('chatMessages');
     const div = document.createElement('div');
     div.id = 'thinkingIndicator';
-    div.className = 'flex justify-start mb-6 px-2';
-    div.innerHTML = `<div class="bg-gray-100 dark:bg-zinc-800 p-4 rounded-2xl flex space-x-1">
-        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div>
-        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.4s"></div>
+    div.className = 'flex justify-start mb-5 px-1';
+    div.innerHTML = `<div class="bg-gray-100 dark:bg-zinc-800 p-3 rounded-2xl flex space-x-1">
+        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
+        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div>
+        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.4s"></div>
     </div>`;
     container.appendChild(div);
     scrollToBottom();
@@ -84,9 +81,7 @@ function hideThinking() {
 
 function saveToHistory(role, text) {
     let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
-    if (!history[currentChatId]) {
-        history[currentChatId] = { title: text.substring(0, 30) + "...", messages: [] };
-    }
+    if (!history[currentChatId]) history[currentChatId] = { title: text.substring(0, 25) + "...", messages: [] };
     history[currentChatId].messages.push({ role, text });
     localStorage.setItem('khittara_history', JSON.stringify(history));
     window.renderHistory();
@@ -97,26 +92,22 @@ window.renderHistory = function() {
     const list = document.getElementById('chatHistoryList');
     if(!list) return;
     list.innerHTML = '';
-    
     Object.keys(history).sort((a,b) => b-a).forEach(id => {
         const item = document.createElement('div');
         item.className = 'group flex items-center justify-between p-3 hover:bg-gray-100 dark:hover:bg-zinc-900 rounded-xl cursor-pointer mb-1 transition-all';
         item.innerHTML = `
             <div class="flex items-center flex-1 overflow-hidden" onclick="loadChat('${id}')">
                 <i class="far fa-comment-alt mr-3 text-gray-400 text-xs"></i>
-                <span class="text-sm truncate">${history[id].title}</span>
+                <span class="text-xs truncate text-gray-600 dark:text-gray-300">${history[id].title}</span>
             </div>
-            <button onclick="deleteChat(event, '${id}')" class="p-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                <i class="fas fa-trash-alt text-xs"></i>
-            </button>
-        `;
+            <button onclick="deleteChat(event, '${id}')" class="p-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fas fa-trash-alt text-[10px]"></i></button>`;
         list.appendChild(item);
     });
 };
 
 window.deleteChat = function(e, id) {
     e.stopPropagation();
-    if(confirm('Delete this history?')) {
+    if(confirm('Delete this chat history?')) {
         let history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
         delete history[id];
         localStorage.setItem('khittara_history', JSON.stringify(history));
@@ -129,25 +120,14 @@ window.loadChat = function(id) {
     const history = JSON.parse(localStorage.getItem('khittara_history') || '{}');
     if(!history[id]) return;
     currentChatId = id;
-    const container = document.getElementById('chatMessages');
-    container.innerHTML = '';
-    history[id].messages.forEach(m => appendMessageUI(m.role, m.text));
     window.switchView('chat');
+    document.getElementById('chatMessages').innerHTML = '';
+    history[id].messages.forEach(m => appendMessageUI(m.role, m.text));
 };
 
 function scrollToBottom() {
     const container = document.getElementById('chatMessages');
     container.scrollTop = container.scrollHeight;
-}
-
-// Mobile Keyboard Adjust
-if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-        if (!document.getElementById('chatView').classList.contains('hidden')) {
-            document.body.style.height = window.visualViewport.height + 'px';
-            scrollToBottom();
-        }
-    });
 }
 
 document.addEventListener('DOMContentLoaded', window.renderHistory);
