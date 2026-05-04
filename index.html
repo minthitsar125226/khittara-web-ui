@@ -1,3 +1,11 @@
+:root {
+  --base-font-size: 16px;
+  --base-icon-size: 24px;
+  --base-logo-size: 150px;
+}
+body { font-size: var(--base-font-size); }
+.nav-icon { width: var(--base-icon-size); height: var(--base-icon-size); }
+.site-logo { width: var(--base-logo-size); height: auto; }
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +52,22 @@
         
         <div class="mt-8 mb-2 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest" id="historyTitle">History</div>
         <div id="chatHistoryList" class="flex-1 overflow-y-auto px-1 chat-scroll"></div>
+
+        <div class="settings-panel px-4 py-3 space-y-3 border-t border-gray-100 dark:border-zinc-800 mt-4 pt-4">
+          <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Display Settings</div>
+          <label class="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
+            <span>Font Size:</span>
+            <input type="range" id="fontSize" min="12" max="24" value="16" class="w-2/3 appearance-none h-2 rounded-lg bg-gray-300 dark:bg-zinc-700 outline-none accent-yellow-500 cursor-pointer ml-2">
+          </label>
+          <label class="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
+            <span>Icon Size:</span>
+            <input type="range" id="iconSize" min="16" max="40" value="24" class="w-2/3 appearance-none h-2 rounded-lg bg-gray-300 dark:bg-zinc-700 outline-none accent-yellow-500 cursor-pointer ml-2">
+          </label>
+          <label class="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
+            <span>Logo Size:</span>
+            <input type="range" id="logoSize" min="100" max="300" value="150" class="w-2/3 appearance-none h-2 rounded-lg bg-gray-300 dark:bg-zinc-700 outline-none accent-yellow-500 cursor-pointer ml-2">
+          </label>
+        </div>
 
         <div class="mt-auto border-t border-gray-100 pt-4 dark:border-zinc-800">
             <div class="sidebar-item" onclick="window.toggleSettings()">
@@ -133,3 +157,24 @@
     <script src="assets/js/chat.js"></script>
 </body>
 </html>
+const settings = [
+  { id: 'fontSize', var: '--base-font-size', unit: 'px' },
+  { id: 'iconSize', var: '--base-icon-size', unit: 'px' },
+  { id: 'logoSize', var: '--base-logo-size', unit: 'px' }
+];
+
+settings.forEach(item => {
+  const el = document.getElementById(item.id);
+  if (el) {
+    el.addEventListener('input', (e) => {
+      document.documentElement.style.setProperty(item.var, e.target.value + item.unit);
+      localStorage.setItem(item.id, e.target.value);
+    });
+    // Load saved values
+    const saved = localStorage.getItem(item.id);
+    if (saved) {
+      el.value = saved;
+      document.documentElement.style.setProperty(item.var, saved + item.unit);
+    }
+  }
+});
