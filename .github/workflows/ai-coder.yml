@@ -1,11 +1,10 @@
-name: AI Auto-Coder
+name: AI Auto-Coder (Advanced)
 on:
   issues:
     types: [opened, edited]
 
 jobs:
   auto_fix:
-    # Issue Title မှာ AI-FIX ပါမှ အလုပ်လုပ်မည်
     if: contains(github.event.issue.title, 'AI-FIX')
     runs-on: ubuntu-latest
     permissions:
@@ -38,20 +37,19 @@ jobs:
           api_key = os.getenv("GEMINI_API_KEY")
           issue_body = os.getenv("ISSUE_BODY")
 
-          # ၁။ Repo Structure တစ်ခုလုံးကို ဆွဲထုတ်ခြင်း (Tree Structure)
+          # ၁။ Repo Structure တစ်ခုလုံးကို ဆွဲထုတ်ခြင်း
           repo_files = []
           for root, dirs, files in os.walk("."):
               for file in files:
                   path = os.path.join(root, file).replace("./", "")
-                  # မလိုအပ်သော folder များကို ဖယ်ထုတ်ခြင်း
                   if not any(x in path for x in ['.git/', 'node_modules/', '__pycache__', '.github/']):
                       repo_files.append(path)
           
           file_tree = "\n".join(repo_files)
 
           def call_gemini(prompt):
-              # သင်အသုံးပြုလိုသော Model (gemini-2.5-flash)
-              model = "gemini-2.5-flash"
+              # နောက်ဆုံး Update ဖြစ်သော Model ခေါ်ဆိုပုံ
+              model = "gemini-2.0-flash" 
               url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
               
               payload = {
@@ -69,24 +67,26 @@ jobs:
                   print(f"Error calling API: {e}")
                   return ""
 
-          # ၂။ AI ကို Project Structure ပြပြီး ပြင်ရမယ့်ဖိုင်များကို ရွေးခိုင်းခြင်း
+          # ၂။ AI ကို Project Structure ပြပြီး ဘယ်ဖိုင်တွေပြင်ရမလဲ ရွေးခိုင်းခြင်း
           identify_prompt = f"""
-          You are a Senior Full-Stack Developer.
-          Here is the project structure:
+          You are a Senior Full-Stack Developer. 
+          Project Structure:
           {file_tree}
 
           User Request: {issue_body}
 
-          Task: Identify ALL files that need to be modified or created to fulfill this request.
-          Return ONLY the file paths, one per line. No explanation or backticks.
+          Task: Identify ALL files that need to be modified or created.
+          Rules:
+          1. Return ONLY the file paths, one per line.
+          2. No backticks, no explanations.
           """
           
           selected_files_text = call_gemini(identify_prompt).strip()
           files_to_fix = [f.strip() for f in selected_files_text.split('\n') if f.strip()]
           
-          print(f"AI selected these files to update: {files_to_fix}")
+          print(f"AI selected these files: {files_to_fix}")
 
-          # ၃။ ရွေးချယ်ထားသော ဖိုင်များကို တစ်ခုချင်းစီ လိုက်ပြင်ခြင်း
+          # ၃။ ဖိုင်များကို တစ်ခုချင်းစီ လိုက်ပြင်ခြင်း (UI မပျက်အောင် စည်းကမ်းချက်များပါဝင်သည်)
           for file_path in files_to_fix:
               file_path = file_path.replace('`', '').replace('./', '')
               
@@ -100,16 +100,19 @@ jobs:
               Current Content:
               {original_content if original_content else "[New File]"}
 
-              User Request: {issue_body}
+              Instruction: {issue_body}
 
-              Task: Provide the full updated code for this file only. 
-              Ensure it integrates perfectly with the rest of the project.
-              Return ONLY the raw code. No markdown blocks, no explanations.
+              Strict Rules for Code Generation:
+              1. DO NOT delete or overwrite existing UI layouts, headers, or containers.
+              2. ONLY add or modify the specific parts requested.
+              3. If you use CSS variables, ensure they are defined in :root.
+              4. Return ONLY the full updated code for this file. 
+              5. NO markdown formatting, NO backticks (```), NO "Here is the code".
               """
               
               updated_code = call_gemini(edit_prompt)
               
-              # Markdown formatting များပါလာပါက ဖယ်ထုတ်ခြင်း
+              # AI က Markdown ပေးလာခဲ့လျှင် Clean လုပ်ပေးခြင်း
               clean_code = re.sub(r'^```[a-z]*\n|```$', '', updated_code, flags=re.MULTILINE).strip()
 
               # Folder မရှိပါက ဆောက်ပေးခြင်း
@@ -117,10 +120,10 @@ jobs:
               
               with open(file_path, 'w') as f:
                   f.write(clean_code)
-              print(f"Successfully updated: {file_path}")
+              print(f"Updated: {file_path}")
 
       - name: Commit & Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "AI: Automated updates for Issue #${{ github.event.issue.number }}"
+          commit_message: "AI-FIX: Automated updates for Issue #${{ github.event.issue.number }}"
           branch: main
