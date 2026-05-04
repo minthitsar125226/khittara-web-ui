@@ -159,7 +159,8 @@ window.toggleTheme = function() {
     console.log('Theme toggled. Current theme:', newTheme);
 };
 
-// New function to apply font size
+// MODIFIED: This function now handles both predefined size strings ('small', 'medium', 'large')
+// and numeric strings ('12' through '24') directly from the slider.
 window.applyFontSize = function(size) {
     console.log('Attempting to apply font size:', size);
     let fontSizeValue;
@@ -171,8 +172,17 @@ window.applyFontSize = function(size) {
             fontSizeValue = '18px'; // Base for large size
             break;
         case 'medium':
-        default:
             fontSizeValue = '16px'; // Base for medium/default size
+            break;
+        default:
+            // Assume it's a numeric pixel value from the slider or an invalid value
+            const numSize = parseInt(size, 10);
+            if (!isNaN(numSize) && numSize >= 12 && numSize <= 24) { // Assuming slider range 12-24
+                fontSizeValue = `${numSize}px`;
+            } else {
+                fontSizeValue = '16px'; // Default if an unknown or invalid value comes in
+                console.warn(`Unknown or invalid font size value "${size}", defaulting to 16px.`);
+            }
             break;
     }
     // Set the CSS custom property on the root element
@@ -212,7 +222,15 @@ window.toggleSettings = function() {
             // Font size selection
             const fontSizeSelect = document.getElementById('fontSizeSelect');
             if (fontSizeSelect) {
-                fontSizeSelect.value = localStorage.getItem('font-size') || 'medium';
+                const savedFontSize = localStorage.getItem('font-size') || 'medium';
+                // Try to map numeric saved values to 'medium' for the select box, otherwise use direct value
+                if (savedFontSize === '14') fontSizeSelect.value = 'small';
+                else if (savedFontSize === '18') fontSizeSelect.value = 'large';
+                else if (parseInt(savedFontSize, 10) >= 12 && parseInt(savedFontSize, 10) <= 24) {
+                    fontSizeSelect.value = 'medium'; // Default to medium if it's a slider value not matching 'small'/'large'
+                } else {
+                    fontSizeSelect.value = savedFontSize; // 'small', 'medium', 'large'
+                }
                 console.log('Font size select populated with:', fontSizeSelect.value);
             } else {
                 console.warn('Font size select element (fontSizeSelect) not found.');
@@ -243,7 +261,7 @@ window.saveSettings = function() {
         console.warn('API Key input element (apiKeyInput) not found during save.');
     }
 
-    // Save Font Size setting
+    // Save Font Size setting (Existing logic - saves 'small', 'medium', 'large' strings)
     const fontSizeSelect = document.getElementById('fontSizeSelect');
     const fontSize = fontSizeSelect ? fontSizeSelect.value : 'medium'; // Default to 'medium'
     localStorage.setItem('font-size', fontSize);
@@ -290,15 +308,50 @@ window.addEventListener('DOMContentLoaded', () => {
         console.log('No API Key saved.');
     }
 
-    // Apply saved font size
-    const savedFontSize = localStorage.getItem('font-size') || 'medium';
+    // Apply saved font size and initialize font size controls (MODIFIED/APPENDED)
+    const savedFontSize = localStorage.getItem('font-size') || '16'; // Default to '16' for slider context, as it's the numeric equivalent of 'medium'
+
+    // Initialize the fontSizeSelect (if it exists)
     const fontSizeSelect = document.getElementById('fontSizeSelect');
     if (fontSizeSelect) {
-        fontSizeSelect.value = savedFontSize; // Set select box value
-        console.log('Font size select box initialized to:', savedFontSize);
+        // Map numeric saved size to 'medium' for the select, or keep existing 'small'/'large'
+        if (savedFontSize === '14') fontSizeSelect.value = 'small';
+        else if (savedFontSize === '18') fontSizeSelect.value = 'large';
+        else if (parseInt(savedFontSize, 10) >= 12 && parseInt(savedFontSize, 10) <= 24) {
+            fontSizeSelect.value = 'medium'; // Default to medium if it's a slider value not matching 'small'/'large'
+        } else {
+            fontSizeSelect.value = savedFontSize; // 'small', 'medium', 'large'
+        }
+        console.log('Font size select box initialized to:', fontSizeSelect.value);
     } else {
         console.warn('Font size select element (fontSizeSelect) not found on DOMContentLoaded.');
     }
+
+    // Initialize the fontSizeSlider (NEW)
+    const fontSizeSlider = document.getElementById('fontSizeSlider');
+    if (fontSizeSlider) {
+        let sliderValue = 16; // Default value for the slider
+        if (parseInt(savedFontSize, 10) >= 12 && parseInt(savedFontSize, 10) <= 24) {
+            sliderValue = parseInt(savedFontSize, 10);
+        } else if (savedFontSize === 'small') { // Map predefined sizes to slider values
+            sliderValue = 14;
+        } else if (savedFontSize === 'large') {
+            sliderValue = 18;
+        }
+        fontSizeSlider.value = sliderValue; // Set the slider's initial position
+        
+        // Add event listener for the new font size slider (NEW)
+        fontSizeSlider.addEventListener('input', (e) => {
+            const newSize = e.target.value; // This will be a string like "16"
+            window.applyFontSize(newSize); // applyFontSize will handle the numeric string
+            localStorage.setItem('font-size', newSize); // Save the number string
+            console.log('Font size slider changed. Saved to localStorage:', newSize);
+        });
+        console.log('Font size slider element found and event listener attached.');
+    } else {
+        console.warn('Font size slider element (fontSizeSlider) not found on DOMContentLoaded.');
+    }
+
     window.applyFontSize(savedFontSize); // Apply font size to the document
     console.log('Applied font size on load:', savedFontSize);
 

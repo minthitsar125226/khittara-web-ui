@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
+:root { --base-font-size: 16px; }
+
 :root {
     --gold: #eab308;
     --sidebar-bg: #ffffff;
